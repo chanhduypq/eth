@@ -158,18 +158,7 @@
     <div>
         <table class="table table-bordered" id="nanopool-table">
             <thead>
-            <th>ID</th>
-            <th>UID</th>
-            <th>Hashrate</th>
-            <th>Lastshare</th>
-            <th>Rating</th>
-            <th>Worker Average Hashrate for 1 hour</th>
-            <th>Worker Average Hashrate for 3 hour</th>
-            <th>Worker Average Hashrate for 6 hour</th>
-            <th>Worker Average Hashrate for 12 hour</th>
-            <th>Worker Average Hashrate for 24 hour</th>
-            <th>Wallet name</th>
-            <th>Actions</th>
+            <?php showThead($fromDate, $toDate);?>
             </thead>
             <tbody>
             @foreach($generalInfo as $worker)
@@ -179,11 +168,7 @@
                     <td>{{ $worker['hashrate'] }}</td>
                     <td data-order="{{ $worker['lastshare'] }}">{{ date('Y-m-d H:i:s', $worker['lastshare']) }}</td>
                     <td>{{ $worker['rating'] }}</td>
-                    <td>{{ $worker['h1'] }}</td>
-                    <td>{{ $worker['h3'] }}</td>
-                    <td>{{ $worker['h6'] }}</td>
-                    <td>{{ $worker['h12'] }}</td>
-                    <td>{{ $worker['h24'] }}</td>
+                    <?php showTr($worker);?>
                     <td>{{ $worker['wallet_name'] }}</td>
                     <td>
                         <a href="{{ route('workerHistory', ['id' => $worker['id'], 'time' => 'all', 'wallet' => $worker['address']]) }}"
@@ -198,7 +183,89 @@
     {{--<div id="container1" style="height: 400px; min-width: 310px"></div>--}}
     {{--</div>--}}
 </div><!-- /.container -->
-<script>
+<?php 
+function showThead($fromDate, $toDate) {
+    if(trim($fromDate)==''||trim($toDate)==''){
+        return;
+    }
+    ?>
+    <th>ID</th>
+    <th>UID</th>
+    <th>Hashrate</th>
+    <th>Lastshare</th>
+    <th>Rating</th>
+    <?php 
+    list($m, $d, $y) = explode("/", $fromDate);
+    $fromDate = "$y-$m-$d " . date('H:i:00');
+    list($m, $d, $y) = explode("/", $toDate);
+    $toDate = "$y-$m-$d " . date('H:i:00');
+    $fromDate = new \DateTime($fromDate);
+    $toDate = new \DateTime($toDate);
+
+    $diff = $toDate->diff($fromDate);
+    
+    if($diff->d==1){?>
+        <th>Worker Average Hashrate for 1 hour</th>
+        <th>Worker Average Hashrate for 3 hour</th>
+        <th>Worker Average Hashrate for 6 hour</th>
+        <th>Worker Average Hashrate for 12 hour</th>
+        <th>Worker Average Hashrate for 24 hour</th>
+    <?php 
+    }
+    else if($diff->d==7){?>
+        <th>Worker Average Hashrate for day 1</th>
+        <th>Worker Average Hashrate for day 2</th>
+        <th>Worker Average Hashrate for day 3</th>
+        <th>Worker Average Hashrate for day 4</th>
+        <th>Worker Average Hashrate for day 5</th>
+        <th>Worker Average Hashrate for day 6</th>
+        <th>Worker Average Hashrate for day 7</th>
+    <?php 
+    }
+    else if($diff->d>27){?>
+        <th>Worker Average Hashrate for week 1</th>
+        <th>Worker Average Hashrate for week 2</th>
+        <th>Worker Average Hashrate for week 3</th>
+        <th>Worker Average Hashrate for week 4</th>
+    <?php 
+    }
+    ?>
+    <th>Wallet name</th>
+    <th>Actions</th>
+    <?php 
+    
+}
+
+function showTr($worker) {
+    
+    if(isset($worker['h1'])){?>
+        <td><?php echo $worker['h1'];?></td>
+        <td><?php echo $worker['h3'];?></td>
+        <td><?php echo $worker['h6'];?></td>
+        <td><?php echo $worker['h12'];?></td>
+        <td><?php echo $worker['h24'];?></td>
+    <?php 
+    }
+    else if(isset($worker['d1'])){?>
+        <td><?php echo $worker['d1'];?></td>
+        <td><?php echo $worker['d2'];?></td>
+        <td><?php echo $worker['d3'];?></td>
+        <td><?php echo $worker['d4'];?></td>
+        <td><?php echo $worker['d5'];?></td>
+        <td><?php echo $worker['d6'];?></td>
+        <td><?php echo $worker['d7'];?></td>
+    <?php 
+    }
+    else if(isset($worker['w1'])){?>
+        <td><?php echo $worker['w1'];?></td>
+        <td><?php echo $worker['w2'];?></td>
+        <td><?php echo $worker['w3'];?></td>
+        <td><?php echo $worker['w4'];?></td>
+    <?php 
+    }
+}
+?>
+    <script>
     $(function () {
 
         if ($('#nanopool-table').length > 0) {
