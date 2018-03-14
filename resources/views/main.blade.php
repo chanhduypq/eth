@@ -167,7 +167,7 @@
                     <td>{{ $worker['uid'] }}</td>
                     <td>{{ $worker['hashrate'] }}</td>
                     <td data-order="{{ $worker['lastshare'] }}">{{ date('Y-m-d H:i:s', $worker['lastshare']) }}</td>
-                    <td>{{ $worker['rating'] }}</td>
+                    <td>{{ $worker['rating']??'&nbsp;' }}</td>
                     <?php showTr($worker);?>
                     <td>{{ $worker['wallet_name'] }}</td>
                     <td>
@@ -185,9 +185,7 @@
 </div><!-- /.container -->
 <?php 
 function showThead($fromDate, $toDate) {
-    if(trim($fromDate)==''||trim($toDate)==''){
-        return;
-    }
+    
     ?>
     <th>ID</th>
     <th>UID</th>
@@ -195,6 +193,13 @@ function showThead($fromDate, $toDate) {
     <th>Lastshare</th>
     <th>Rating</th>
     <?php 
+    if(trim($fromDate)==''||trim($toDate)==''){?>
+        <th>Worker Average Hashrate</th> 
+        <th>Wallet name</th>
+        <th>Actions</th>
+    <?php 
+        return;
+    }
     list($m, $d, $y) = explode("/", $fromDate);
     $fromDate = "$y-$m-$d " . date('H:i:00');
     list($m, $d, $y) = explode("/", $toDate);
@@ -222,7 +227,7 @@ function showThead($fromDate, $toDate) {
         <th>Worker Average Hashrate for day 7</th>
     <?php 
     }
-    else if($diff->d>27){?>
+    else if($diff->d==0&&$diff->m>0){?>
         <th>Worker Average Hashrate for week 1</th>
         <th>Worker Average Hashrate for week 2</th>
         <th>Worker Average Hashrate for week 3</th>
@@ -261,6 +266,10 @@ function showTr($worker) {
         <td><?php echo $worker['w2'];?></td>
         <td><?php echo $worker['w3'];?></td>
         <td><?php echo $worker['w4'];?></td>
+    <?php 
+    }
+    else if(isset($worker['all'])){?>
+        <td><?php echo $worker['all'];?></td>
     <?php 
     }
 }
