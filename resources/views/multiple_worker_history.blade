@@ -1,0 +1,230 @@
+<html>
+<head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/js/jquery.dataTables.min.js?<?php echo substr(str_shuffle(str_repeat($x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil(10/strlen($x)) )),1,10);?>"></script>
+    <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis-timeline-graph2d.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+
+    <div class="starter-template">
+        <h1>Nanopool</h1>
+    </div>
+    <div>
+
+        <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => 'all']) }}" class="btn btn-success @if($time == 'all') disabled @endif ">All time</a>
+        <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => 'month']) }}" class="btn btn-success @if($time == 'month') disabled @endif ">1 Month</a>
+        <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => 'week']) }}" class="btn btn-success @if($time == 'week') disabled @endif ">1 Week</a>
+        <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => 'day']) }}" class="btn btn-success @if($time == 'day') disabled @endif ">1 Day</a> <br><br>
+
+
+        <table class="table table-bordered">
+            <tbody>
+            <tr>
+                <td>Online time (Uptime)</td>
+                <td>{{ number_format($anyActivityShares['actvTime'], 2) }} hours</td>
+            </tr>
+            <tr>
+                <td>Offline time (Uptime)</td>
+                <td>{{ number_format($zeroActivityShares['actvTime'], 2) }} hours</td>
+            </tr>
+            <tr>
+                <td>Total shares</td>
+                <td>{{ $anyActivityShares['shares'] }}</td>
+            </tr>
+            <tr>
+                <td>Average Hashrate</td>
+                <td>{{ $averageHashRate }}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <br>
+        <br>
+    </div>
+    <br>
+    <div>
+        <!--tuetc-->
+    </div>
+    
+    <div class="col-sm-7"><div class="dataTables_paginate paging_simple_numbers" id="nanopool-table_paginate"><ul class="pagination"><li class="paginate_button previous disabled" id="nanopool-table_previous"><a href="#" aria-controls="nanopool-table" data-dt-idx="0" tabindex="0">Previous</a></li><li class="paginate_button active"><a href="#" aria-controls="nanopool-table" data-dt-idx="1" tabindex="0">1</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="2" tabindex="0">2</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="3" tabindex="0">3</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="4" tabindex="0">4</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="5" tabindex="0">5</a></li><li class="paginate_button disabled" id="nanopool-table_ellipsis"><a href="#" aria-controls="nanopool-table" data-dt-idx="6" tabindex="0">…</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="7" tabindex="0">197</a></li><li class="paginate_button next" id="nanopool-table_next"><a href="#" aria-controls="nanopool-table" data-dt-idx="8" tabindex="0">Next</a></li></ul></div></div>
+    
+    <div id="container"></div>
+    
+    <div id="Pagination" class="pagination"></div> 
+
+
+    {{--<div>--}}
+    {{--<div id="container1" style="height: 400px; min-width: 310px"></div>--}}
+    {{--</div>--}}
+</div><!-- /.container -->
+<script>
+    data_json_string='<?php echo json_encode($workerData);?>';
+    data_json_array=$.parseJSON(data_json_string);
+    
+    var datas=[];
+    series=[];
+    for(data_json_array in key){
+        series.push({'name':key,'data':[]});
+        datas.push(data_json_array[key]);;
+    }
+    
+    console.log(data_json_array);
+    
+    
+    for(i=0;i<data_json_array.length;i++){
+        hashrate=parseFloat(data_json_array[i].hashrate);
+        datas.push([data_json_array[i].date,hashrate]);
+        
+    }
+    
+//    series: [{
+//                name: '{{ $workerId }}',
+//                data: []
+//            }
+            
+
+    
+function pageselectCallback(page_index){
+
+    var items_per_page = 10,
+        max_elem = 10,
+        from = page_index * items_per_page,
+        to = from + max_elem,
+        newcontent = '',
+        chartData = [];
+
+    //pie.series[0].setData( data.slice(from,to) );
+    if(typeof pie !== 'object') {
+        pie = new Highcharts.Chart({
+            chart: {
+                renderTo: 'container',
+                type: 'line'
+            },
+            title: {
+                text: 'History of reported hashrate (Average hashrate)'
+            },
+
+            subtitle: {
+                text: ''
+            },
+
+        //    xAxis: {
+        //        type: 'datetime',
+        //        dateTimeLabelFormats: {
+        //            minute: '%H:%M',
+        //            hour: '%H:%M',
+        //            day: '%b %e',
+        //            week: '%b %e'
+        //
+        //        },
+        //        tickWidth: 0,
+        //        gridLineDashStyle: 'Dot',
+        //        gridLineWidth: 1
+        //    },
+
+            yAxis: {
+                title: {
+                    text: 'Requests'
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+
+            plotOptions: {
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    pointStart: 2010
+                }
+            },
+
+        //    tooltip: {
+        //        pointFormat: '{point.y} Mh/s'
+        //    },
+
+            series: series,
+
+            exporting: {
+                enabled: false
+            },
+
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            }
+        });        
+    }
+    
+    for(i=0;i<datas.length;i++){
+        pie.series[i].setData( datas[i].slice(from, to) );
+    }
+    
+    
+    // Prevent click eventpropagation
+    return false;
+}
+
+pageselectCallback(0);
+//
+//$(".highcharts-credits").html('');
+    $(function(){
+
+//        if($('#nanopool-table').length > 0) {
+//            $('#nanopool-table').DataTable();
+//        }
+        
+        $("").click(function (){
+           page=$(this).html();
+           pageselectCallback(page);
+        });
+        
+
+    });
+
+</script>
+</body>
+</html>
+

@@ -58,6 +58,9 @@ $router->post('/admin/group/addrelation', [
 $router->get('/history/{wallet}/{id}/{time}', [
     'as' => 'workerHistory', 'uses' => 'ExampleController@workerHistory',
 ]);
+$router->get('/multipleHistory/{group}/{time}', [
+    'as' => 'multipleWorkerHistory', 'uses' => 'ExampleController@multipleWorkerHistory',
+]);
 
 $router->get('/payment/history/{wallet}/{time}', [
     'as' => 'paymentHistory', 'uses' => 'ExampleController@paymentHistory',

@@ -27,10 +27,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis-timeline-graph2d.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
+    
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.js"></script>
+    
 </head>
 <body>
 
@@ -43,7 +45,7 @@
     <br>
     <div>
         <ul class="nav nav-tabs" id="myTabs" role="tablist">
-            @foreach($wallets as $key => $wallet)
+            @foreach($wallets as $key => $wallet) 
                 <li role="presentation" @if($key == 0) class="active" @endif><a href="#{{ $key }}" role="tab"
                                                                                 id="{{ $key }}-tab" data-toggle="tab"
                                                                                 aria-controls="{{ $key }}"
@@ -52,7 +54,7 @@
             @endforeach
         </ul>
         <div class="tab-content" id="myTabContent">
-            @foreach($walletsInformation as $key => $wallet)
+            @foreach($walletsInformation as $key => $wallet)  
                 <div class="tab-pane fade @if($key == 0) active in @endif" role="tabpanel" id="{{ $key }}"
                      aria-labelledby="{{ $key }}-tab">
                     <table class="table table-bordered">
@@ -106,7 +108,7 @@
     Select group please:<br><br>
     <ul class="nav nav-tabs">
         <li role="presentation" @if(!isset($groupMain)) class="active" @endif><a href="{{ route('boot') }}">All</a></li>
-        @foreach($groups as $group)
+        @foreach($groups as $group) 
             <li role="presentation" @if(isset($groupMain) &&  $groupMain == $group->id) class="active" @endif><a
                         href="{{ route('group', ['group' => $group->id]) }}">{{ $group->name }}</a></li>
         @endforeach
@@ -118,13 +120,13 @@
     <br>
 
     <form>
-        <a class="btn-success btn-sm btn"
+        <a class="btn-success btn-sm btn<?php if($selected=='all') echo ' disabled';?>"
            href="?">All time</a>
-        <a class="btn-success btn-sm btn"
+        <a class="btn-success btn-sm btn<?php if($selected=='day') echo ' disabled';?>"
            href="?fromDate={{ $day }}&toDate={{ $today }}">1 Day</a>
-        <a class="btn-success btn-sm btn"
+        <a class="btn-success btn-sm btn<?php if($selected=='week') echo ' disabled';?>"
            href="?fromDate={{ $week }}&toDate={{ $today }}">1 Week</a>
-        <a class="btn-success btn-sm btn"
+        <a class="btn-success btn-sm btn<?php if($selected=='month') echo ' disabled';?>"
            href="?fromDate={{ $month }}&toDate={{ $today }}">1 Month</a>
 
         <input class="datepicker" id="fromDate" value="{{ $fromDate }}" name="fromDate" data-date-format="mm/dd/yyyy"> to
@@ -158,10 +160,10 @@
     <div>
         <table class="table table-bordered" id="nanopool-table">
             <thead>
-            <?php showThead($fromDate, $toDate);?>
+            <?php showThead($fromDate, $toDate,$colspan);?>
             </thead>
             <tbody>
-            @foreach($generalInfo as $worker)
+            @foreach($generalInfo as $worker) 
                 <tr>
                     <td>{{ $worker['id'] }}</td>
                     <td>{{ $worker['uid'] }}</td>
@@ -171,10 +173,20 @@
                     <?php showTr($worker);?>
                     <td>{{ $worker['wallet_name'] }}</td>
                     <td>
-                        <a href="{{ route('workerHistory', ['id' => $worker['id'], 'time' => 'all', 'wallet' => $worker['address']]) }}"
+                        <a href="{{ route('workerHistory', ['id' => $worker['id'], 'time' => $selected, 'wallet' => $worker['address']]) }}"
                            target="_blank">View history</a></td>
                 </tr>
             @endforeach
+            <?php 
+            if(count($generalInfo)>1){ ?>
+                <tr>
+                    <td colspan="<?php echo $colspan;?>" style="text-align: right;">
+                        <a href="{{ route('multipleWorkerHistory', ['group' => 'all', 'time' => $selected]) }}"
+                           target="_blank">View history of all machine</a></td>
+                </tr>
+            <?php 
+            }
+            ?>
             </tbody>
         </table>
 
@@ -184,7 +196,7 @@
     {{--</div>--}}
 </div><!-- /.container -->
 <?php 
-function showThead($fromDate, $toDate) {
+function showThead($fromDate, $toDate,&$colspan) {
     
     ?>
     <th>ID</th>
@@ -198,6 +210,7 @@ function showThead($fromDate, $toDate) {
         <th>Wallet name</th>
         <th>Actions</th>
     <?php 
+    $colspan=10;
         return;
     }
     list($m, $d, $y) = explode("/", $fromDate);
@@ -216,6 +229,7 @@ function showThead($fromDate, $toDate) {
         <th>Worker Average Hashrate for 12 hour</th>
         <th>Worker Average Hashrate for 24 hour</th>
     <?php 
+    $colspan=12;
     }
     else if($diff->d==7){?>
         <th>Worker Average Hashrate for day 1</th>
@@ -226,6 +240,7 @@ function showThead($fromDate, $toDate) {
         <th>Worker Average Hashrate for day 6</th>
         <th>Worker Average Hashrate for day 7</th>
     <?php 
+    $colspan=14;
     }
     else if($diff->d==0&&$diff->m>0){?>
         <th>Worker Average Hashrate for week 1</th>
@@ -233,6 +248,7 @@ function showThead($fromDate, $toDate) {
         <th>Worker Average Hashrate for week 3</th>
         <th>Worker Average Hashrate for week 4</th>
     <?php 
+    $colspan=11;
     }
     ?>
     <th>Wallet name</th>
