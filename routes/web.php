@@ -55,6 +55,11 @@ $router->post('/admin/group/addrelation', [
     'as' => 'saveGroupRelation', 'uses' => 'ExampleController@saveGroupRelation',
 ]);
 
+$router->post('/getHashratechartForMachine', [
+    'as' => 'getHashratechartForMachine', 'uses' => 'ExampleController@getHashratechartForMachine',
+]);
+
+
 $router->get('/history/{wallet}/{id}/{time}', [
     'as' => 'workerHistory', 'uses' => 'ExampleController@workerHistory',
 ]);

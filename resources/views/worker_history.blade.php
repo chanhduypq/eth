@@ -238,8 +238,12 @@ function pageselectCallback(page_index){
 
             yAxis: {
                 title: {
-                    text: 'Requests'
+                    text: 'Hashrate'
                 }
+            },
+            xAxis: {
+                labels: {enabled:false}
+
             },
             legend: {
                 layout: 'vertical',

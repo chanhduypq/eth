@@ -72,10 +72,26 @@
     </div>
     <br>
     <div>
-        <!--tuetc-->
+        <table class="table table-bordered" id="nanopool-table">
+            <thead>
+            <th>worker ID</th>
+            <th>date</th>
+            <th>shares</th>
+            <th>hashrate</th>
+            </thead>
+            <tbody>
+            @foreach($workerData1 as $worker)
+                <tr>
+                    <td>{{ $worker->machine_id }}</td>
+                    <td data-sort="{{ strtotime($worker->date) }}">{{ date('Y-m-d H:i:s', strtotime($worker->date)) }}</td>
+                    <td>{{ $worker->shares }}</td>
+                    <td>{{ $worker->hashrate }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
     </div>
     
-    <div class="col-sm-7"><div class="dataTables_paginate paging_simple_numbers" id="nanopool-table_paginate"><ul class="pagination"><li class="paginate_button previous disabled" id="nanopool-table_previous"><a href="#" aria-controls="nanopool-table" data-dt-idx="0" tabindex="0">Previous</a></li><li class="paginate_button active"><a href="#" aria-controls="nanopool-table" data-dt-idx="1" tabindex="0">1</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="2" tabindex="0">2</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="3" tabindex="0">3</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="4" tabindex="0">4</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="5" tabindex="0">5</a></li><li class="paginate_button disabled" id="nanopool-table_ellipsis"><a href="#" aria-controls="nanopool-table" data-dt-idx="6" tabindex="0">…</a></li><li class="paginate_button "><a href="#" aria-controls="nanopool-table" data-dt-idx="7" tabindex="0">197</a></li><li class="paginate_button next" id="nanopool-table_next"><a href="#" aria-controls="nanopool-table" data-dt-idx="8" tabindex="0">Next</a></li></ul></div></div>
     
     <div id="container"></div>
     
@@ -92,26 +108,18 @@
     
     var datas=[];
     series=[];
-    for(data_json_array in key){
+    
+    for(key in data_json_array){
         series.push({'name':key,'data':[]});
-        datas.push(data_json_array[key]);;
-    }
-    
-    console.log(data_json_array);
-    
-    
-    for(i=0;i<data_json_array.length;i++){
-        hashrate=parseFloat(data_json_array[i].hashrate);
-        datas.push([data_json_array[i].date,hashrate]);
+        temp=data_json_array[key];
+        data=[];
+        for(i=0;i<temp.length;i++){
+            hashrate=parseFloat(temp[i].hashrate);
+            data.push([temp[i].date,hashrate]);
+        }
         
+        datas.push(data);
     }
-    
-//    series: [{
-//                name: '{{ $workerId }}',
-//                data: []
-//            }
-            
-
     
 function pageselectCallback(page_index){
 
@@ -153,7 +161,7 @@ function pageselectCallback(page_index){
 
             yAxis: {
                 title: {
-                    text: 'Requests'
+                    text: 'Hashrate'
                 }
             },
             legend: {
@@ -180,6 +188,11 @@ function pageselectCallback(page_index){
             exporting: {
                 enabled: false
             },
+            
+            xAxis: {
+                labels: {enabled:false}
+
+            },
 
             responsive: {
                 rules: [{
@@ -201,7 +214,8 @@ function pageselectCallback(page_index){
     for(i=0;i<datas.length;i++){
         pie.series[i].setData( datas[i].slice(from, to) );
     }
-    
+
+//     pie.series.setData( datas.slice(from, to) );
     
     // Prevent click eventpropagation
     return false;
@@ -209,19 +223,13 @@ function pageselectCallback(page_index){
 
 pageselectCallback(0);
 //
-//$(".highcharts-credits").html('');
+$(".highcharts-credits").html('');
     $(function(){
 
-//        if($('#nanopool-table').length > 0) {
-//            $('#nanopool-table').DataTable();
-//        }
+        if($('#nanopool-table').length > 0) {
+            $('#nanopool-table').DataTable({"pageLength": parseInt(10*(series.length))});
+        }
         
-        $("").click(function (){
-           page=$(this).html();
-           pageselectCallback(page);
-        });
-        
-
     });
 
 </script>

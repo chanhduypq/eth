@@ -108,9 +108,9 @@
     Select group please:<br><br>
     <ul class="nav nav-tabs">
         <li role="presentation" @if(!isset($groupMain)) class="active" @endif><a href="{{ route('boot') }}">All</a></li>
-        @foreach($groups as $group) 
-            <li role="presentation" @if(isset($groupMain) &&  $groupMain == $group->id) class="active" @endif><a
-                        href="{{ route('group', ['group' => $group->id]) }}">{{ $group->name }}</a></li>
+        @foreach($groups as $group1) 
+            <li role="presentation" @if(isset($groupMain) &&  $groupMain == $group1->id) class="active" @endif><a
+                        href="{{ route('group', ['group' => $group1->id]) }}">{{ $group1->name }}</a></li>
         @endforeach
         <li role="presentation" @if(isset($noGroup) && $noGroup) class="active" @endif><a
                     href="{{ route('group', ['group' => 'nogroup']) }}">No group</a></li>
@@ -164,13 +164,18 @@
             </thead>
             <tbody>
             @foreach($generalInfo as $worker) 
-                <tr>
+                <tr class="{{ $worker['address'].' '.$worker['id'] }}">
                     <td>{{ $worker['id'] }}</td>
                     <td>{{ $worker['uid'] }}</td>
                     <td>{{ $worker['hashrate'] }}</td>
                     <td data-order="{{ $worker['lastshare'] }}">{{ date('Y-m-d H:i:s', $worker['lastshare']) }}</td>
                     <td>{{ $worker['rating']??'&nbsp;' }}</td>
-                    <?php showTr($worker);?>
+                    <?php // showTr($worker);?>
+                    <td colspan="<?php echo $colspan-7;?>">
+                        <div class="loading">
+                            <img src="/images/ui-anim_basic_16x16.gif"/>
+                        </div>
+                    </td>
                     <td>{{ $worker['wallet_name'] }}</td>
                     <td>
                         <a href="{{ route('workerHistory', ['id' => $worker['id'], 'time' => $selected, 'wallet' => $worker['address']]) }}"
@@ -178,10 +183,10 @@
                 </tr>
             @endforeach
             <?php 
-            if(count($generalInfo)>1){ ?>
+            if(count($generalInfo)){ ?>
                 <tr>
                     <td colspan="<?php echo $colspan;?>" style="text-align: right;">
-                        <a href="{{ route('multipleWorkerHistory', ['group' => 'all', 'time' => $selected]) }}"
+                        <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => $selected]) }}"
                            target="_blank">View history of all machine</a></td>
                 </tr>
             <?php 
@@ -210,7 +215,7 @@ function showThead($fromDate, $toDate,&$colspan) {
         <th>Wallet name</th>
         <th>Actions</th>
     <?php 
-    $colspan=10;
+    $colspan=8;
         return;
     }
     list($m, $d, $y) = explode("/", $fromDate);
@@ -291,14 +296,90 @@ function showTr($worker) {
 }
 ?>
     <script>
+        function loadData(selector){
+            class_val=$(selector).attr('class');
+            console.log(class_val);
+            temp=class_val.split(' ');
+            console.log(temp[0]);
+            from=$.trim($("#fromDate").val());
+            if(from==''){
+                from='_';
+            }
+            to=$.trim($("#toDate").val());
+            if(to==''){
+                to='_';
+            }
+            $.ajax({
+                url: "{{ route('getHashratechartForMachine') }}",
+                async: true,
+                type: 'POST',
+                data: {'wallet':temp[0],'id':temp[1],'fromDate':from,'toDate':to},
+                success: function (data) {
+                    $(selector).find('.loading').hide();
+                    data=$.parseJSON(data);
+                    console.log(data);
+                    for(key in data){
+//                        $(selector).find('td').eq(5).removeAttr('colspan');
+                        td1=$(selector).find('td').eq(0).html();
+                        td2=$(selector).find('td').eq(1).html();
+                        td3=$(selector).find('td').eq(2).html();
+                        td4=$(selector).find('td').eq(3).html();
+                        td5=$(selector).find('td').eq(4).html();
+                        td7=$(selector).find('td').eq(6).html();
+                        td8=$(selector).find('td').eq(7).html();
+                        if(key=='h1'){
+                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+                            html+="<td>"+data['h1']+"</td>"+"<td>"+data['h3']+"</td>"+"<td>"+data['h6']+"</td>"+"<td>"+data['h12']+"</td>"+"<td>"+data['h24']+"</td>";
+                            html+="<td>"+td7+"</td>";
+                            html+="<td>"+td8+"</td>";
+                            $(selector).html(html);
+                            break;
+                        }
+                        else if(key=='d1'){
+                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+                            html+="<td>"+data['d1']+"</td>"+"<td>"+data['d2']+"</td>"+"<td>"+data['d3']+"</td>"+"<td>"+data['d4']+"</td>"+"<td>"+data['d5']+"</td>"+"<td>"+data['d6']+"</td>"+"<td>"+data['d7']+"</td>";
+                            html+="<td>"+td7+"</td>";
+                            html+="<td>"+td8+"</td>";
+                            $(selector).html(html);
+                            break;
+                        }
+                        else if(key=='w1'){
+                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+                            html+="<td>"+data['w1']+"</td>"+"<td>"+data['w2']+"</td>"+"<td>"+data['w3']+"</td>"+"<td>"+data['w4']+"</td>";
+                            html+="<td>"+td7+"</td>";
+                            html+="<td>"+td8+"</td>";
+                            $(selector).html(html);
+                            break;
+                        }
+                        else if(key=='all'){
+                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+                            html+="<td>"+data['all']+"</td>";
+                            html+="<td>"+td7+"</td>";
+                            html+="<td>"+td8+"</td>";
+                            $(selector).html(html);
+                            break;
+                        }
+                        
+                    }
+                },
+                error: function (request, status, error) {
+                    console.log(request.responseText);
+                }
+            });
+        }
     $(function () {
+        
+        trs=$("#nanopool-table tbody tr");
+        for(i=0;i<trs.length;i++){
+            loadData($(trs[i]));
+        }
+        
 
         if ($('#nanopool-table').length > 0) {
             $('#nanopool-table').DataTable();
         }
 
         $('#sandbox-container .input-daterange').datepicker();
-        {{--var items = [{!! $historyHashRate !!}];--}}
 
         $('#fromDate').datepicker();
         $('#toDate').datepicker();
