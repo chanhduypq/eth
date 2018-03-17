@@ -54,47 +54,16 @@
             @endforeach
         </ul>
         <div class="tab-content" id="myTabContent">
-            @foreach($walletsInformation as $key => $wallet)  
-                <div class="tab-pane fade @if($key == 0) active in @endif" role="tabpanel" id="{{ $key }}"
+            @foreach($wallets as $key => $wallet)  
+                <div class="tab-pane fade @if($key == 0) active in @endif" role="tabpanel" id="{{ $key }}" data="{{ $wallet->address }}"
                      aria-labelledby="{{ $key }}-tab">
                     <table class="table table-bordered">
                         <tbody>
-                        <tr>
-                            <td>Account</td>
-                            <td>{{ $wallet['data']['account'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Balance</td>
-                            <td>{{ $wallet['data']['balance'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Hashrate</td>
-                            <td>{{ $wallet['data']['hashrate'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Hashrate (1 Hour)</td>
-                            <td>{{ $wallet['data']['avgHashrate']['h1'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Hashrate (3 Hour)</td>
-                            <td>{{ $wallet['data']['avgHashrate']['h3'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Hashrate (6 Hour)</td>
-                            <td>{{ $wallet['data']['avgHashrate']['h6'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Hashrate (12 Hour)</td>
-                            <td>{{ $wallet['data']['avgHashrate']['h12'] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Hashrate (24 Hour)</td>
-                            <td>{{ $wallet['data']['avgHashrate']['h24'] }}</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><a class="btn-success btn-lg btn" target="_blank"
-                                   href="{{ route('payments', ['wallet' => $wallet['data']['account']]) }}">Payments</a>
+                        <tr class="loading">
+                            <td colspan="2" style="margin: 0 auto;text-align: center;">
+                                <div style="margin: 0 auto;text-align: center;">
+                                    <img src="/images/ui-anim_basic_16x16.gif"/>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -139,20 +108,36 @@
     <br>
     <table class="table table-bordered">
         <tr>
+            <td>Online time (Uptime)</td>
+            <td id="online_time">
+                <div class="loading" style="margin: 0 auto;text-align: center;">
+                    <img src="/images/ui-anim_basic_16x16.gif"/>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Offline time (Uptime)</td>
+            <td id="offline_time">
+                <div class="loading" style="margin: 0 auto;text-align: center;">
+                    <img src="/images/ui-anim_basic_16x16.gif"/>
+                </div>
+            </td>
+        </tr>
+        <tr>
             <td>Total shares</td>
-            <td>{{ $statisticData['totalShares'] }}</td>
+            <td id="total_shares">
+                <div class="loading" style="margin: 0 auto;text-align: center;">
+                    <img src="/images/ui-anim_basic_16x16.gif"/>
+                </div>
+            </td>
         </tr>
         <tr>
-            <td>Avarage Hashrate</td>
-            <td>{{ $statisticData['avgHashrate'] }}</td>
-        </tr>
-        <tr>
-            <td>Online Time</td>
-            <td>{{ $statisticData['onlineTime'] }}</td>
-        </tr>
-        <tr>
-            <td>Offline Time</td>
-            <td>{{ $statisticData['offlineTime'] }}</td>
+            <td>Average Hashrate</td>
+            <td id="average_hashrate">
+                <div class="loading" style="margin: 0 auto;text-align: center;">
+                    <img src="/images/ui-anim_basic_16x16.gif"/>
+                </div>
+            </td>
         </tr>
     </table>
 
@@ -164,13 +149,12 @@
             </thead>
             <tbody>
             @foreach($generalInfo as $worker) 
-                <tr class="{{ $worker['address'].' '.$worker['id'] }}">
+                <tr class="{{ $worker['address'] }}">
                     <td>{{ $worker['id'] }}</td>
                     <td>{{ $worker['uid'] }}</td>
                     <td>{{ $worker['hashrate'] }}</td>
                     <td data-order="{{ $worker['lastshare'] }}">{{ date('Y-m-d H:i:s', $worker['lastshare']) }}</td>
                     <td>{{ $worker['rating']??'&nbsp;' }}</td>
-                    <?php // showTr($worker);?>
                     <td colspan="<?php echo $colspan-7;?>">
                         <div class="loading">
                             <img src="/images/ui-anim_basic_16x16.gif"/>
@@ -262,45 +246,31 @@ function showThead($fromDate, $toDate,&$colspan) {
     
 }
 
-function showTr($worker) {
-    
-    if(isset($worker['h1'])){?>
-        <td><?php echo $worker['h1'];?></td>
-        <td><?php echo $worker['h3'];?></td>
-        <td><?php echo $worker['h6'];?></td>
-        <td><?php echo $worker['h12'];?></td>
-        <td><?php echo $worker['h24'];?></td>
-    <?php 
-    }
-    else if(isset($worker['d1'])){?>
-        <td><?php echo $worker['d1'];?></td>
-        <td><?php echo $worker['d2'];?></td>
-        <td><?php echo $worker['d3'];?></td>
-        <td><?php echo $worker['d4'];?></td>
-        <td><?php echo $worker['d5'];?></td>
-        <td><?php echo $worker['d6'];?></td>
-        <td><?php echo $worker['d7'];?></td>
-    <?php 
-    }
-    else if(isset($worker['w1'])){?>
-        <td><?php echo $worker['w1'];?></td>
-        <td><?php echo $worker['w2'];?></td>
-        <td><?php echo $worker['w3'];?></td>
-        <td><?php echo $worker['w4'];?></td>
-    <?php 
-    }
-    else if(isset($worker['all'])){?>
-        <td><?php echo $worker['all'];?></td>
-    <?php 
-    }
-}
 ?>
     <script>
+        $.ajax({
+            url: "{{ route('getHashrateHistoryForMultiMachine') }}",
+            async: true,
+            type: 'POST',
+            data: {'group':"{{ $group }}",'time':"{{ $selected }}"},
+            success: function (data) {
+                $(".loading").remove();
+                showCommon(data);
+            },
+            error: function (request, status, error) {
+                console.log(request.responseText);
+            }
+        });
+        
+        
+        function showCommon(data_json_string){
+            data_json_array=$.parseJSON(data_json_string);
+            $("#online_time").html(data_json_array.online_time+' hours');
+            $("#offline_time").html(data_json_array.offline_time+' hours');
+            $("#total_shares").html(data_json_array.total_shares);
+            $("#average_hashrate").html(data_json_array.average_hashrate);
+        }
         function loadData(selector){
-            class_val=$(selector).attr('class');
-            console.log(class_val);
-            temp=class_val.split(' ');
-            console.log(temp[0]);
             from=$.trim($("#fromDate").val());
             if(from==''){
                 from='_';
@@ -313,13 +283,11 @@ function showTr($worker) {
                 url: "{{ route('getHashratechartForMachine') }}",
                 async: true,
                 type: 'POST',
-                data: {'wallet':temp[0],'id':temp[1],'fromDate':from,'toDate':to},
+                data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html()),'fromDate':from,'toDate':to},
                 success: function (data) {
                     $(selector).find('.loading').hide();
                     data=$.parseJSON(data);
-                    console.log(data);
                     for(key in data){
-//                        $(selector).find('td').eq(5).removeAttr('colspan');
                         td1=$(selector).find('td').eq(0).html();
                         td2=$(selector).find('td').eq(1).html();
                         td3=$(selector).find('td').eq(2).html();
@@ -367,11 +335,32 @@ function showTr($worker) {
                 }
             });
         }
-    $(function () {
         
+        function loadWallet(selector){
+            $.ajax({
+                url: "{{ route('getGeneralInfoForwallet') }}",
+                async: true,
+                type: 'POST',
+                data: {'wallet':$(selector).attr('data')},
+                success: function (data) {
+                    $(selector).find('tbody').eq(0).html(data);
+                },
+                error: function (request, status, error) {
+                    console.log(request.responseText);
+                }
+            });
+        }
+        
+    $(function () {
         trs=$("#nanopool-table tbody tr");
-        for(i=0;i<trs.length;i++){
+        for(i=0;i<trs.length-1;i++){
             loadData($(trs[i]));
+        }
+        
+        
+        divs=$(".tab-pane.fade");
+        for(i=0;i<divs.length;i++){
+            loadWallet($(divs[i]));
         }
         
 
@@ -384,96 +373,7 @@ function showTr($worker) {
         $('#fromDate').datepicker();
         $('#toDate').datepicker();
 
-        //   console.log(items);
-//        $('#container1').highcharts({
-//            chart: {
-//                type: 'line',
-//                marginTop: 50,
-//                backgroundColor: null,
-//                height: 300,
-//                spacingLeft: 0,
-//                spacingRight: 5,
-//            },
-//            plotOptions: {
-//                pie: {
-//                    allowPointSelect: true,
-//                    cursor: 'pointer',
-//                    dataLabels: {
-//                        enabled: false,
-//                        formatter: function () {
-//                            return '<b>' + this.point.name + '</b>: ' + this.y + '';
-//                        }
-//                    },
-//                    showInLegend: true,
-//                    center: [70, 80],
-//                    size: '100%',
-//                },
-//                series: {
-//                    animation: {
-//                        duration: 1200
-//                    }
-//                }
-//            },
-//
-//            title: {
-//                text: 'History of reported hashrate (Average hashrate)'
-//            },
-//            subtitle: {
-//             //   text: '<span class="text-centered"><h1>' + 111 +'</h1></span>',
-//                useHTML: true,
-//                align: 'right',
-//                verticalAlign: 'top',
-//                y: 0,
-//                x: 5,
-//                style: {
-//                    zIndex: 1
-//                }
-//            },
-//            xAxis: {
-//                type: 'datetime',
-//                dateTimeLabelFormats: {
-//                    day: '%b %e',
-//                    week: '%b %e',
-//                },
-//                tickWidth: 0,
-//                gridLineDashStyle: 'Dot',
-//                gridLineWidth: 1
-//            },
-//
-//            yAxis: {
-//                min: 0,
-//                title: {
-//                    text: 'Requests',
-//                    style: {
-//                        color: '#000000',
-//                        fontSize: '10px'
-//                    }
-//                },
-//                gridLineWidth: 1,
-//                labels: {
-//                    enabled: true
-//                }
-//            },
-//            tooltip: {
-//                pointFormat: '{point.y} Mh/s'
-//            },
-//            exporting: {
-//                enabled: false
-//            },
-//
-//            series: [{
-//                //name: 'Requests (Total requests: ' + 11 +')',
-//                data: items,
-//                pointStart: 0,
-//                lineWidth: 2,
-//                marker: {
-//                    symbol: "circle",
-//                    lineWidth: 1,
-//                    radius: 4
-//                }
-//            }],
-//            threshold: null
-//        });
+        
     });
 
 </script>
