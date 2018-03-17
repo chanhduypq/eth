@@ -26,9 +26,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis-timeline-graph2d.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+<!--    <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/series-label.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>-->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 </head>
 <body>
 
@@ -95,8 +97,6 @@
     
     <div id="container"></div>
     
-    <div id="Pagination" class="pagination"></div> 
-
 
     {{--<div>--}}
     {{--<div id="container1" style="height: 400px; min-width: 310px"></div>--}}
@@ -106,20 +106,89 @@
     data_json_string='<?php echo json_encode($workerData);?>';
     data_json_array=$.parseJSON(data_json_string);
     
-    var datas=[];
     series=[];
     
     for(key in data_json_array){
-        series.push({'name':key,'data':[]});
+        
         temp=data_json_array[key];
-        data=[];
+        times=[];
+        hashrates=[];
         for(i=0;i<temp.length;i++){
             hashrate=parseFloat(temp[i].hashrate);
-            data.push([temp[i].date,hashrate]);
+            hashrates.push(hashrate);
+            times.push(parseInt(new Date(temp[i].date).getTime()));
         }
         
-        datas.push(data);
+        min_of_array = Math.min.apply(Math, times);
+        series.push({'name':key,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
     }
+    
+    //hide text Zoom
+    Highcharts.setOptions({
+            lang:{
+                rangeSelectorZoom: ''
+            }
+    });
+
+    // Create the chart
+    Highcharts.stockChart('container', {
+        chart: {
+            events: {
+                load: function () {
+                    this.setTitle(null, {
+                        text: ''
+                    });
+                }
+            },
+            zoomType: 'x'
+        },
+
+        rangeSelector: {
+
+            buttons: [{
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'week',
+                count: 1,
+                text: '1w'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'month',
+                count: 6,
+                text: '6m'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+            selected: 3
+        },
+
+        yAxis: {
+            title: {
+                text: 'Hashrates'
+            }
+        },
+
+        title: {
+            text: 'History of reported hashrate (Average hashrate)'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        series: series
+
+    });
     
 function pageselectCallback(page_index){
 
@@ -221,7 +290,7 @@ function pageselectCallback(page_index){
     return false;
 }
 
-pageselectCallback(0);
+//pageselectCallback(0);
 //
 $(".highcharts-credits").html('');
     $(function(){
