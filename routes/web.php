@@ -59,6 +59,10 @@ $router->post('/getHashratechartForMachine', [
     'as' => 'getHashratechartForMachine', 'uses' => 'ExampleController@getHashratechartForMachine',
 ]);
 
+$router->post('/getHashrateHistoryForMachine', [
+    'as' => 'getHashrateHistoryForMachine', 'uses' => 'ExampleController@getHashrateHistoryForMachine',
+]);
+
 
 $router->get('/history/{wallet}/{id}/{time}', [
     'as' => 'workerHistory', 'uses' => 'ExampleController@workerHistory',

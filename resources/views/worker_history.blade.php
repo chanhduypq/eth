@@ -82,13 +82,7 @@
             <th>hashrate</th>
             </thead>
             <tbody>
-            @foreach($workerData as $worker)
-                <tr>
-                    <td data-sort="{{ strtotime($worker->date) }}">{{ date('Y-m-d H:i:s', strtotime($worker->date)) }}</td>
-                    <td>{{ $worker->shares }}</td>
-                    <td>{{ $worker->hashrate }}</td>
-                </tr>
-            @endforeach
+            
             </tbody>
         </table>
     </div>
@@ -103,98 +97,133 @@
     
 <script>
     data_json_string='<?php echo json_encode($workerData);?>';
-    data_json_array=$.parseJSON(data_json_string);
-    var datas=[];
-    var times=[];
-    var hashrates=[];
-    for(i=0;i<data_json_array.length;i++){
-        hashrate=parseFloat(data_json_array[i].hashrate);
-        datas.push([data_json_array[i].date,hashrate]);
-        times.push(parseInt(new Date(data_json_array[i].date).getTime()));
-        hashrates.push(hashrate);
-        
-    }
-    var max_of_array = Math.max.apply(Math, times);
-    var min_of_array = Math.min.apply(Math, times);
-    
-    data={'pointStart':min_of_array,'pointInterval':600000,'dataLength':times.length,'data':hashrates};//600000: 10 phút
-        
-
-    //hide text Zoom
-    Highcharts.setOptions({
-            lang:{
-                rangeSelectorZoom: ''
-            }
+    $.ajax({
+        url: "{{ route('getHashrateHistoryForMachine') }}",
+        async: true,
+        type: 'POST',
+        data: {'id':"{{ $workerId }}",'time':"{{ $time }}",'wallet':"{{ $address }}" },
+        success: function (data) {
+            showGraph(data);
+            showTable(data);
+        },
+        error: function (request, status, error) {
+            console.log(request.responseText);
+        }
     });
+    
+    function showTable(data_json_string){
+        data_json_array=$.parseJSON(data_json_string);
+        for(i=0;i<data_json_array.length;i++){
+            tr='<tr>'+
+                    '<td data-sort="'+data_json_array[i].date+'">'+data_json_array[i].date+'</td>'+
+                    '<td>'+data_json_array[i].shares+'</td>'+
+                    '<td>'+data_json_array[i].hashrate+'</td>'+
+                        +'</tr>';
+            $('#nanopool-table tbody').append(tr);
 
-    // Create the chart
-    Highcharts.stockChart('container', {
-        chart: {
-            events: {
-                load: function () {
-                    this.setTitle(null, {
-                        text: ''
-                    });
+        }
+        $('#nanopool-table').DataTable();
+    }
+//    showGraph(data_json_string);
+    
+    function showGraph(data_json_string){
+        data_json_array=$.parseJSON(data_json_string);
+        var datas=[];
+        var times=[];
+        var hashrates=[];
+        for(i=0;i<data_json_array.length;i++){
+            hashrate=parseFloat(data_json_array[i].hashrate);
+            datas.push([data_json_array[i].date,hashrate]);
+            times.push(parseInt(new Date(data_json_array[i].date).getTime()));
+            hashrates.push(hashrate);
+
+        }
+        var max_of_array = Math.max.apply(Math, times);
+        var min_of_array = Math.min.apply(Math, times);
+
+        data={'pointStart':min_of_array,'pointInterval':600000,'dataLength':times.length,'data':hashrates};//600000: 10 phút
+
+
+        //hide text Zoom
+        Highcharts.setOptions({
+                lang:{
+                    rangeSelectorZoom: ''
+                }
+        });
+
+        // Create the chart
+        Highcharts.stockChart('container', {
+            chart: {
+                events: {
+                    load: function () {
+                        this.setTitle(null, {
+                            text: ''
+                        });
+                    }
+                },
+                zoomType: 'x'
+            },
+
+            rangeSelector: {
+
+                buttons: [{
+                    type: 'day',
+                    count: 1,
+                    text: '1d'
+                }, {
+                    type: 'week',
+                    count: 1,
+                    text: '1w'
+                }, {
+                    type: 'month',
+                    count: 1,
+                    text: '1m'
+                }, {
+                    type: 'month',
+                    count: 6,
+                    text: '6m'
+                }, {
+                    type: 'year',
+                    count: 1,
+                    text: '1y'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                selected: 3
+            },
+
+            yAxis: {
+                title: {
+                    text: 'Hashrates'
                 }
             },
-            zoomType: 'x'
-        },
 
-        rangeSelector: {
-
-            buttons: [{
-                type: 'day',
-                count: 1,
-                text: '1d'
-            }, {
-                type: 'week',
-                count: 1,
-                text: '1w'
-            }, {
-                type: 'month',
-                count: 1,
-                text: '1m'
-            }, {
-                type: 'month',
-                count: 6,
-                text: '6m'
-            }, {
-                type: 'year',
-                count: 1,
-                text: '1y'
-            }, {
-                type: 'all',
-                text: 'All'
-            }],
-            selected: 3
-        },
-
-        yAxis: {
             title: {
-                text: 'Hashrates'
-            }
-        },
+                text: 'History of reported hashrate (Average hashrate)'
+            },
 
-        title: {
-            text: 'History of reported hashrate (Average hashrate)'
-        },
+            subtitle: {
+                text: ''
+            },
 
-        subtitle: {
-            text: ''
-        },
+            series: [{
+                name: '{{ $workerId }}',
+                data: data.data,
+                pointStart: data.pointStart,
+                pointInterval: data.pointInterval,
+                tooltip: {
+                    valueDecimals: 0,
+                    valueSuffix: ''
+                }
+            }]
 
-        series: [{
-            name: '{{ $workerId }}',
-            data: data.data,
-            pointStart: data.pointStart,
-            pointInterval: data.pointInterval,
-            tooltip: {
-                valueDecimals: 0,
-                valueSuffix: ''
-            }
-        }]
-
-    });
+        });
+        
+        $(".highcharts-credits").html('');
+        
+    }
+    
 
 
     
@@ -313,12 +342,12 @@ function pageselectCallback(page_index){
 
 //pageselectCallback(0);
 
-$(".highcharts-credits").html('');
+
     $(function(){
 
-        if($('#nanopool-table').length > 0) {
-            $('#nanopool-table').DataTable();
-        }
+//        if($('#nanopool-table').length > 0) {
+//            $('#nanopool-table').DataTable();
+//        }
     });
 
 </script>
