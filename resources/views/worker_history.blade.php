@@ -53,19 +53,35 @@
             <tbody>
             <tr>
                 <td>Online time (Uptime)</td>
-                <td>{{ number_format($anyActivityShares['actvTime'], 2) }} hours</td>
+                <td id="online_time">
+                    <div class="loading" style="margin: 0 auto;text-align: center;">
+                        <img src="/images/ui-anim_basic_16x16.gif"/>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <td>Offline time (Uptime)</td>
-                <td>{{ number_format($zeroActivityShares['actvTime'], 2) }} hours</td>
+                <td id="offline_time">
+                    <div class="loading" style="margin: 0 auto;text-align: center;">
+                        <img src="/images/ui-anim_basic_16x16.gif"/>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <td>Total shares</td>
-                <td>{{ $anyActivityShares['shares'] }}</td>
+                <td id="total_shares">
+                    <div class="loading" style="margin: 0 auto;text-align: center;">
+                        <img src="/images/ui-anim_basic_16x16.gif"/>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <td>Average Hashrate</td>
-                <td>{{ $averageHashRate }}</td>
+                <td id="average_hashrate">
+                    <div class="loading" style="margin: 0 auto;text-align: center;">
+                        <img src="/images/ui-anim_basic_16x16.gif"/>
+                    </div>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -82,11 +98,20 @@
             <th>hashrate</th>
             </thead>
             <tbody>
-            
+                <tr class="loading">
+                    <td colspan="3" style="margin: 0 auto;text-align: center;">
+                        <div style="margin: 0 auto;text-align: center;">
+                            <img src="/images/ui-anim_basic_16x16.gif"/>
+                        </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
     
+    <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;padding-top: 50px;width: 90%;">
+        <img src="/images/ui-anim_basic_16x16.gif"/>
+    </div>
     <div id="container"></div>
     
 
@@ -96,23 +121,33 @@
 </div><!-- /.container -->
     
 <script>
-    data_json_string='<?php echo json_encode($workerData);?>';
     $.ajax({
         url: "{{ route('getHashrateHistoryForMachine') }}",
         async: true,
         type: 'POST',
         data: {'id':"{{ $workerId }}",'time':"{{ $time }}",'wallet':"{{ $address }}" },
         success: function (data) {
+            $(".loading").remove();
             showGraph(data);
             showTable(data);
+            showCommon(data);
         },
         error: function (request, status, error) {
             console.log(request.responseText);
         }
     });
     
+    function showCommon(data_json_string){
+        data_json_array=$.parseJSON(data_json_string);
+        $("#online_time").html(data_json_array.online_time+' hours');
+        $("#offline_time").html(data_json_array.offline_time+' hours');
+        $("#total_shares").html(data_json_array.total_shares);
+        $("#average_hashrate").html(data_json_array.average_hashrate);
+    }
+    
     function showTable(data_json_string){
         data_json_array=$.parseJSON(data_json_string);
+        data_json_array=data_json_array.data;
         for(i=0;i<data_json_array.length;i++){
             tr='<tr>'+
                     '<td data-sort="'+data_json_array[i].date+'">'+data_json_array[i].date+'</td>'+
@@ -124,24 +159,31 @@
         }
         $('#nanopool-table').DataTable();
     }
-//    showGraph(data_json_string);
+    showGraph('');
     
     function showGraph(data_json_string){
-        data_json_array=$.parseJSON(data_json_string);
-        var datas=[];
-        var times=[];
-        var hashrates=[];
-        for(i=0;i<data_json_array.length;i++){
-            hashrate=parseFloat(data_json_array[i].hashrate);
-            datas.push([data_json_array[i].date,hashrate]);
-            times.push(parseInt(new Date(data_json_array[i].date).getTime()));
-            hashrates.push(hashrate);
+        if(data_json_string!=''){
+            data_json_array=$.parseJSON(data_json_string);
+            data_json_array=data_json_array.data;
+            var datas=[];
+            var times=[];
+            var hashrates=[];
+            for(i=0;i<data_json_array.length;i++){
+                hashrate=parseFloat(data_json_array[i].hashrate);
+                datas.push([data_json_array[i].date,hashrate]);
+                times.push(parseInt(new Date(data_json_array[i].date).getTime()));
+                hashrates.push(hashrate);
 
+            }
+            var max_of_array = Math.max.apply(Math, times);
+            var min_of_array = Math.min.apply(Math, times);
+
+            data={'pointStart':min_of_array,'pointInterval':600000,'dataLength':times.length,'data':hashrates};//600000: 10 phút
         }
-        var max_of_array = Math.max.apply(Math, times);
-        var min_of_array = Math.min.apply(Math, times);
-
-        data={'pointStart':min_of_array,'pointInterval':600000,'dataLength':times.length,'data':hashrates};//600000: 10 phút
+        else{
+            data={'pointStart':1230764400000,'pointInterval':600000,'dataLength':0,'data':[]};//600000: 10 phút
+        }
+        
 
 
         //hide text Zoom
