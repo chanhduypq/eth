@@ -34,8 +34,11 @@
     <style>
         .scroll{
             max-height: 300px;
-            overflow-y: scroll;
-            
+            overflow: scroll;            
+        }
+        .no_scroll{
+            overflow: hidden !important;
+            max-height: max-content !important;
         }
     </style>
 </head>
@@ -98,6 +101,7 @@
     <br>
     <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;width: 90%;">
         <img src="/images/ui-anim_basic_16x16.gif"/>
+        <div>0/<?php echo count(json_decode($machines));?> machines</div>
     </div>
     <br><br>
     <div>
@@ -115,6 +119,7 @@
     <br><br><br><br>
     <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;width: 90%;">
         <img src="/images/ui-anim_basic_16x16.gif"/>
+        <div>0/<?php echo count(json_decode($machines));?> machines</div>
     </div>
     <br><br>
     <div id="container"></div>
@@ -181,16 +186,13 @@
                 pie.addSeries({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
                 
                 number_of_load_machine_complete++;
+                $(".loading div").html(number_of_load_machine_complete+" / "+machines.length+" machines");
                 if(number_of_load_machine_complete == machines.length){
                     average_hashrate=average_hashrate/number_of_load_machine_complete;
                     showCommon(online_time,offline_time,total_shares,average_hashrate);
                     $(".loading").remove();
                     $('#nanopool-table').DataTable();
-                    $('#nanopool-table').parent().css({
-                                                    'overflow': 'hidden',
-                                                    'height'  : $( window ).height(),
-                                                    'max-height'  : $( window ).height()
-                                                    });
+                    $('#nanopool-table_wrapper').parent().removeClass('scroll');
                 }
                 
 
@@ -325,7 +327,16 @@
                 text: ''
             },
 
-            series: series
+            series: [{
+                name: '',
+                data: [],
+                pointStart: 1230764400000,
+                pointInterval: 600000,
+                tooltip: {
+                    valueDecimals: 0,
+                    valueSuffix: ''
+                }
+            }]
 
         });
         
