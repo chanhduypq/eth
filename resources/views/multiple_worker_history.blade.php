@@ -135,6 +135,7 @@
     var machines='<?php echo $machines;?>';
     var series=[];
     var times=[];
+    var pie;
     machines=$.parseJSON(machines);
     var time='{{ $time }}';
     
@@ -150,13 +151,27 @@
     }
         
     function loadData(wallet,id){
+        
         if(time=='all'){
             from='_';
             to='_';
         }
-        else{//tính sau tuetc
-            from='03/17/2018';
-            to='03/18/2018';
+        else{
+            
+            to=new Date();
+            from=new Date();
+            if(time=='day'){
+                from.setTime(to.getTime()-86400000);
+            }
+            else if(time=='month'){
+                from.setMonth(from.getMonth()-1);
+            }
+            else if(time=='week'){
+                from.setTime(to.getTime()-86400000*7);
+            }
+            from=from.getMonth()+"/"+from.getDate()+"/"+from.getFullYear();
+            to=to.getMonth()+"/"+to.getDate()+"/"+to.getFullYear();
+            
         }
         $.ajax({
             url: "{{ route('getHashratechartForMachine') }}",
@@ -183,7 +198,8 @@
                 }
 
                 min_of_array = Math.min.apply(Math, times);
-                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
+                series.push({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
+                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
                 
                 number_of_load_machine_complete++;
                 $(".loading div").html(number_of_load_machine_complete+" / "+machines.length+" machines");
@@ -203,28 +219,11 @@
         });
     }
     
-//    $.ajax({
-//        url: "{{ route('getHashrateHistoryForMultiMachine') }}",
-//        async: true,
-//        type: 'POST',
-//        data: {'group':"{{ $group }}",'time':"{{ $time }}"},
-//        success: function (data) {
-//            $(".loading").remove();
-//            showGraph(data);
-//            showTable(data);
-//            showCommon(data);
-//        },
-//        error: function (request, status, error) {
-//            console.log(request.responseText);
-//        }
-//    });
-    
-    
     function showTableForOneMachine(data_json_array,machine_id){
         for(i=0;i<data_json_array.length;i++){
             tr='<tr>'+
                     '<td>'+machine_id+'</td>'+
-                    '<td data-sort="'+data_json_array[i].date+'">'+data_json_array[i].date+'</td>'+
+                    '<td data-sort="'+data_json_array[i].date_string+'">'+data_json_array[i].date_string+'</td>'+
                     '<td>'+data_json_array[i].shares+'</td>'+
                     '<td>'+data_json_array[i].hashrate+'</td>'+
                         +'</tr>';
@@ -232,38 +231,11 @@
 
         }
         
-//        $('#nanopool-table').DataTable();
     }
     
-    showGraph('');
+    showEmptyGraph('');
     
-    function showGraph(data_json_string){
-        if(data_json_string!=''){
-            series=[];
-            data_json_array=$.parseJSON(data_json_string);
-            data_json_array=data_json_array.data;
-            for(key in data_json_array){
-
-                temp=data_json_array[key];
-                times=[];
-                hashrates=[];
-                for(i=0;i<temp.length;i++){
-                    hashrate=parseFloat(temp[i].hashrate);
-                    hashrates.push(hashrate);
-                    times.push(parseInt(new Date(temp[i].date).getTime()));
-                }
-
-                min_of_array = Math.min.apply(Math, times);
-                series.push({'name':key,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
-            }
-        }
-        else{
-            series=[];
-            data={'pointStart':1230764400000,'pointInterval':600000,'dataLength':0,'data':[]};//600000: 10 phút
-        }
-        
-
-
+    function showEmptyGraph(){
         //hide text Zoom
         Highcharts.setOptions({
                 lang:{
@@ -326,17 +298,17 @@
             subtitle: {
                 text: ''
             },
-
-            series: [{
-                name: '',
-                data: [],
-                pointStart: 1230764400000,
-                pointInterval: 600000,
-                tooltip: {
-                    valueDecimals: 0,
-                    valueSuffix: ''
-                }
-            }]
+            series:[]
+//            series: [{
+//                name: '',
+//                data: [],
+//                pointStart: 1230764400000,
+//                pointInterval: 600000,
+//                tooltip: {
+//                    valueDecimals: 0,
+//                    valueSuffix: ''
+//                }
+//            }]
 
         });
         
@@ -344,119 +316,6 @@
         
     }
     
-    
-        
-function pageselectCallback(page_index){
-
-    var items_per_page = 10,
-        max_elem = 10,
-        from = page_index * items_per_page,
-        to = from + max_elem,
-        newcontent = '',
-        chartData = [];
-
-    //pie.series[0].setData( data.slice(from,to) );
-    if(typeof pie !== 'object') {
-        pie = new Highcharts.Chart({
-            chart: {
-                renderTo: 'container',
-                type: 'line'
-            },
-            title: {
-                text: 'History of reported hashrate (Average hashrate)'
-            },
-
-            subtitle: {
-                text: ''
-            },
-
-        //    xAxis: {
-        //        type: 'datetime',
-        //        dateTimeLabelFormats: {
-        //            minute: '%H:%M',
-        //            hour: '%H:%M',
-        //            day: '%b %e',
-        //            week: '%b %e'
-        //
-        //        },
-        //        tickWidth: 0,
-        //        gridLineDashStyle: 'Dot',
-        //        gridLineWidth: 1
-        //    },
-
-            yAxis: {
-                title: {
-                    text: 'Hashrate'
-                }
-            },
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'middle'
-            },
-
-            plotOptions: {
-                series: {
-                    label: {
-                        connectorAllowed: false
-                    },
-                    pointStart: 2010
-                }
-            },
-
-        //    tooltip: {
-        //        pointFormat: '{point.y} Mh/s'
-        //    },
-
-            series: series,
-
-            exporting: {
-                enabled: false
-            },
-            
-            xAxis: {
-                labels: {enabled:false}
-
-            },
-
-            responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 500
-                    },
-                    chartOptions: {
-                        legend: {
-                            layout: 'horizontal',
-                            align: 'center',
-                            verticalAlign: 'bottom'
-                        }
-                    }
-                }]
-            }
-        });        
-    }
-    
-    for(i=0;i<datas.length;i++){
-        pie.series[i].setData( datas[i].slice(from, to) );
-    }
-
-//     pie.series.setData( datas.slice(from, to) );
-    
-    // Prevent click eventpropagation
-    return false;
-}
-
-//pageselectCallback(0);
-//
-
-//    $(function(){
-//
-//        if($('#nanopool-table').length > 0) {
-//            $('#nanopool-table').DataTable({"pageLength": parseInt(10*(series.length))});
-//        }
-//        
-//    });
-
 </script>
 </body>
 </html>
