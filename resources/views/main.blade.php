@@ -248,27 +248,15 @@ function showThead($fromDate, $toDate,&$colspan) {
 
 ?>
     <script>
-        $.ajax({
-            url: "{{ route('getHashrateHistoryForMultiMachine') }}",
-            async: true,
-            type: 'POST',
-            data: {'group':"{{ $group }}",'time':"{{ $selected }}"},
-            success: function (data) {
-                $(".loading").remove();
-                showCommon(data);
-            },
-            error: function (request, status, error) {
-                console.log(request.responseText);
-            }
-        });
         
-        
-        function showCommon(data_json_string){
-            data_json_array=$.parseJSON(data_json_string);
-            $("#online_time").html(data_json_array.online_time+' hours');
-            $("#offline_time").html(data_json_array.offline_time+' hours');
-            $("#total_shares").html(data_json_array.total_shares);
-            $("#average_hashrate").html(data_json_array.average_hashrate);
+        var number_of_load_machine_complete=0;
+        var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
+
+        function showCommon(online_time,offline_time,total_shares,average_hashrate){
+            $("#online_time").html(online_time.toFixed(2)+' hours');
+            $("#offline_time").html(offline_time.toFixed(2)+' hours');
+            $("#total_shares").html(total_shares);
+            $("#average_hashrate").html(average_hashrate.toFixed(2));
         }
         function loadData(selector){
             from=$.trim($("#fromDate").val());
@@ -284,9 +272,10 @@ function showThead($fromDate, $toDate,&$colspan) {
                 async: true,
                 type: 'POST',
                 data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html()),'fromDate':from,'toDate':to},
-                success: function (data) {
+                success: function (data) {                    
                     $(selector).find('.loading').hide();
                     data=$.parseJSON(data);
+                    console.log(data);
                     for(key in data){
                         td1=$(selector).find('td').eq(0).html();
                         td2=$(selector).find('td').eq(1).html();
@@ -328,7 +317,19 @@ function showThead($fromDate, $toDate,&$colspan) {
                             break;
                         }
                         
+                        
+                        
                     }
+                    online_time+=parseFloat(data['online_time']);
+                    offline_time+=parseFloat(data['offline_time']);
+                    total_shares+=parseFloat(data['total_shares']);
+                    average_hashrate+=parseFloat(data['average_hashrate']);
+                    number_of_load_machine_complete++;
+                    if(number_of_load_machine_complete == $("#nanopool-table tbody tr").length-1){
+                        average_hashrate=average_hashrate/number_of_load_machine_complete;
+                        showCommon(online_time,offline_time,total_shares,average_hashrate);
+                    }
+                    
                 },
                 error: function (request, status, error) {
                     console.log(request.responseText);

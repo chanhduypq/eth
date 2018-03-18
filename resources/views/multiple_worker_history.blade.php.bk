@@ -31,13 +31,6 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>-->
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
-    <style>
-        .scroll{
-            max-height: 300px;
-            overflow-y: scroll;
-            
-        }
-    </style>
 </head>
 <body>
 
@@ -128,12 +121,10 @@
     var number_of_load_machine_complete=0;
     var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
     var machines='<?php echo $machines;?>';
-    var series=[];
-    var times=[];
     machines=$.parseJSON(machines);
     var time='{{ $time }}';
     
-    for(i=0;i<machines.length;i++){
+    for(i=0;i<machines.length-1;i++){
         loadData(machines[i].wallet_address,machines[i].machine_id);
     }
     
@@ -160,39 +151,64 @@
             data: {'wallet':wallet,'id':id,'fromDate':from,'toDate':to},
             success: function (data) {                    
                 data=$.parseJSON(data);
+                console.log(data);
+//                for(key in data){
+//                    td1=$(selector).find('td').eq(0).html();
+//                    td2=$(selector).find('td').eq(1).html();
+//                    td3=$(selector).find('td').eq(2).html();
+//                    td4=$(selector).find('td').eq(3).html();
+//                    td5=$(selector).find('td').eq(4).html();
+//                    td7=$(selector).find('td').eq(6).html();
+//                    td8=$(selector).find('td').eq(7).html();
+//                    if(key=='h1'){
+//                        html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+//                        html+="<td>"+data['h1']+"</td>"+"<td>"+data['h3']+"</td>"+"<td>"+data['h6']+"</td>"+"<td>"+data['h12']+"</td>"+"<td>"+data['h24']+"</td>";
+//                        html+="<td>"+td7+"</td>";
+//                        html+="<td>"+td8+"</td>";
+//                        $(selector).html(html);
+//                        break;
+//                    }
+//                    else if(key=='d1'){
+//                        html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+//                        html+="<td>"+data['d1']+"</td>"+"<td>"+data['d2']+"</td>"+"<td>"+data['d3']+"</td>"+"<td>"+data['d4']+"</td>"+"<td>"+data['d5']+"</td>"+"<td>"+data['d6']+"</td>"+"<td>"+data['d7']+"</td>";
+//                        html+="<td>"+td7+"</td>";
+//                        html+="<td>"+td8+"</td>";
+//                        $(selector).html(html);
+//                        break;
+//                    }
+//                    else if(key=='w1'){
+//                        html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+//                        html+="<td>"+data['w1']+"</td>"+"<td>"+data['w2']+"</td>"+"<td>"+data['w3']+"</td>"+"<td>"+data['w4']+"</td>";
+//                        html+="<td>"+td7+"</td>";
+//                        html+="<td>"+td8+"</td>";
+//                        $(selector).html(html);
+//                        break;
+//                    }
+//                    else if(key=='all'){
+//                        html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
+//                        html+="<td>"+data['all']+"</td>";
+//                        html+="<td>"+td7+"</td>";
+//                        html+="<td>"+td8+"</td>";
+//                        $(selector).html(html);
+//                        break;
+//                    }
+//
+//
+//
+//                }
                 online_time+=parseFloat(data['online_time']);
                 offline_time+=parseFloat(data['offline_time']);
                 total_shares+=parseFloat(data['total_shares']);
                 average_hashrate+=parseFloat(data['average_hashrate']);
-                if(!($('#nanopool-table').parent().hasClass('scroll'))){
-                    $('#nanopool-table').parent().addClass('scroll');
-                }
-                showTableForOneMachine(data['data'],data['machine_id']);
-                
-                temp=data['data'];
-                hashrates=[];
-                for(i=0;i<temp.length;i++){
-                    hashrate=parseFloat(temp[i].hashrate);
-                    hashrates.push(hashrate);
-                    times.push(parseInt(new Date(temp[i].date).getTime()));
-                }
-
-                min_of_array = Math.min.apply(Math, times);
-                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
-                
                 number_of_load_machine_complete++;
+                console.log(number_of_load_machine_complete);
+                console.log(machines.length);
+                console.log(number_of_load_machine_complete == machines.length);
+                console.log('tuetc');
                 if(number_of_load_machine_complete == machines.length){
                     average_hashrate=average_hashrate/number_of_load_machine_complete;
                     showCommon(online_time,offline_time,total_shares,average_hashrate);
-                    $(".loading").remove();
-                    $('#nanopool-table').DataTable();
-                    $('#nanopool-table').parent().css({
-                                                    'overflow': 'hidden',
-                                                    'height'  : $( window ).height(),
-                                                    'max-height'  : $( window ).height()
-                                                    });
                 }
-                
 
             },
             error: function (request, status, error) {
@@ -216,21 +232,33 @@
 //            console.log(request.responseText);
 //        }
 //    });
+//    
+//    function showCommon(data_json_string){
+//        data_json_array=$.parseJSON(data_json_string);
+//        $("#online_time").html(data_json_array.online_time+' hours');
+//        $("#offline_time").html(data_json_array.offline_time+' hours');
+//        $("#total_shares").html(data_json_array.total_shares);
+//        $("#average_hashrate").html(data_json_array.average_hashrate);
+//    }
     
-    
-    function showTableForOneMachine(data_json_array,machine_id){
-        for(i=0;i<data_json_array.length;i++){
-            tr='<tr>'+
-                    '<td>'+machine_id+'</td>'+
-                    '<td data-sort="'+data_json_array[i].date+'">'+data_json_array[i].date+'</td>'+
-                    '<td>'+data_json_array[i].shares+'</td>'+
-                    '<td>'+data_json_array[i].hashrate+'</td>'+
-                        +'</tr>';
-            $('#nanopool-table tbody').append(tr);
+    function showTable(data_json_string){
+        data_json_array=$.parseJSON(data_json_string);
+        data_json_array=data_json_array.data;
+        for(key in data_json_array){
+            temp=data_json_array[key];
+            for(i=0;i<temp.length;i++){
+                tr='<tr>'+
+                        '<td>'+key+'</td>'+
+                        '<td data-sort="'+temp[i].date+'">'+temp[i].date+'</td>'+
+                        '<td>'+temp[i].shares+'</td>'+
+                        '<td>'+temp[i].hashrate+'</td>'+
+                            +'</tr>';
+                $('#nanopool-table tbody').append(tr);
 
+            }
         }
         
-//        $('#nanopool-table').DataTable();
+        $('#nanopool-table').DataTable();
     }
     
     showGraph('');
@@ -270,7 +298,7 @@
         });
 
         // Create the chart
-        pie = new Highcharts.stockChart('container', {
+        Highcharts.stockChart('container', {
             chart: {
                 events: {
                     load: function () {
