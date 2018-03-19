@@ -136,6 +136,8 @@
     var series=[];
     var times=[];
     var pie;
+    from_date='{{ $from_date }}';
+    to_date='{{ $to_date }}';
     machines=$.parseJSON(machines);
     var time='{{ $time }}';
     
@@ -152,32 +154,11 @@
         
     function loadData(wallet,id){
         
-        if(time=='all'){
-            from='_';
-            to='_';
-        }
-        else{
-            
-            to=new Date();
-            from=new Date();
-            if(time=='day'){
-                from.setTime(to.getTime()-86400000);
-            }
-            else if(time=='month'){
-                from.setMonth(from.getMonth()-1);
-            }
-            else if(time=='week'){
-                from.setTime(to.getTime()-86400000*7);
-            }
-            from=from.getMonth()+"/"+from.getDate()+"/"+from.getFullYear();
-            to=to.getMonth()+"/"+to.getDate()+"/"+to.getFullYear();
-            
-        }
         $.ajax({
             url: "{{ route('getHashratechartForMachine') }}",
             async: true,
             type: 'POST',
-            data: {'wallet':wallet,'id':id,'fromDate':from,'toDate':to},
+            data: {'wallet':wallet,'id':id,'fromDate':from_date,'toDate':to_date},
             success: function (data) {                    
                 data=$.parseJSON(data);
                 online_time+=parseFloat(data['online_time']);

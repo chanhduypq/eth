@@ -119,36 +119,18 @@
     {{--<div id="container1" style="height: 400px; min-width: 310px"></div>--}}
     {{--</div>--}}
 </div><!-- /.container -->
-    
+
 <script>
 
         var time='{{ $time }}';
-        if(time=='all'){
-            from='_';
-            to='_';
-        }
-        else{
-            
-            to=new Date();
-            from=new Date();
-            if(time=='day'){
-                from.setTime(to.getTime()-86400000);
-            }
-            else if(time=='month'){
-                from.setMonth(from.getMonth()-1);
-            }
-            else if(time=='week'){
-                from.setTime(to.getTime()-86400000*7);
-            }
-            from=from.getMonth()+"/"+from.getDate()+"/"+from.getFullYear();
-            to=to.getMonth()+"/"+to.getDate()+"/"+to.getFullYear();
-            
-        }
+        from_date='{{ $from_date }}';
+        to_date='{{ $to_date }}';
+
     $.ajax({
         url: "{{ route('getHashratechartForMachine') }}",
         async: true,
         type: 'POST',
-        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}",'fromDate':from,'toDate':to},
+        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}",'fromDate':from_date,'toDate':to_date},
         success: function (data) {  
             $(".loading").remove();
             showGraph(data);
