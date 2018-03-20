@@ -1,0 +1,8 @@
+prepareGraph: function này k còn dùng nữa
+getStatisticInformation: kiểm tra xem thử function này còn dùng nữa hay k
+getHashrateHistoryForMachine: kiểm tra xem thử function này còn dùng nữa hay k
+
+tại trang home, function getGeneralInfo chạy hơn 1 lần, chỗ load data cho mỗi machine
+
+getHashratechartForMachine: nếu là 1 ngày thi data (h1, h3,h6, h12, h24) dc lấy từ $apiNanopool->getGeneralInfo();
+tại sao k lấy từ $data = $this->curl_getcontent('https://api.nanopool.org/v1/eth/hashratechart/' . $wallet . '/' . $id);
