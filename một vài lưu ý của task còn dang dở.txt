@@ -1,8 +1,8 @@
-prepareGraph: function này k còn dùng nữa
-getStatisticInformation: kiểm tra xem thử function này còn dùng nữa hay k
-getHashrateHistoryForMachine: kiểm tra xem thử function này còn dùng nữa hay k
+prepareGraph: function này k còn dùng nữa // đã xóa xong
+getStatisticInformation: kiểm tra xem thử function này còn dùng nữa hay k //k còn dùng nữa, nhưng chưa xóa vẫn để đó
+getHashrateHistoryForMachine: kiểm tra xem thử function này còn dùng nữa hay k//k còn dùng nữa, đã xóa xong
 
-tại trang home, function getGeneralInfo chạy hơn 1 lần, chỗ load data cho mỗi machine
+tại trang home, function getGeneralInfo chạy hơn 1 lần, chỗ load data cho mỗi machine//để xử lý sau
 
 getHashratechartForMachine: nếu là 1 ngày thi data (h1, h3,h6, h12, h24) dc lấy từ $apiNanopool->getGeneralInfo();
-tại sao k lấy từ $data = $this->curl_getcontent('https://api.nanopool.org/v1/eth/hashratechart/' . $wallet . '/' . $id);
+tại sao k lấy từ $data = $this->curl_getcontent('https://api.nanopool.org/v1/eth/hashratechart/' . $wallet . '/' . $id); // chưa có gì quan trọng, để xem lại kỹ sau 

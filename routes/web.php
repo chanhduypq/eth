@@ -59,10 +59,6 @@ $router->post('/getHashratechartForMachine', [
     'as' => 'getHashratechartForMachine', 'uses' => 'ExampleController@getHashratechartForMachine',
 ]);
 
-$router->post('/getHashrateHistoryForMachine', [
-    'as' => 'getHashrateHistoryForMachine', 'uses' => 'ExampleController@getHashrateHistoryForMachine',
-]);
-
 $router->post('/getHashrateHistoryForMultiMachine', [
     'as' => 'getHashrateHistoryForMultiMachine', 'uses' => 'ExampleController@getHashrateHistoryForMultiMachine',
 ]);
