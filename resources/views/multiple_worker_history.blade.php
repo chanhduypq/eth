@@ -134,7 +134,6 @@
     var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
     var machines='<?php echo $machines;?>';
     var series=[];
-    var times=[];
     var pie;
     from_date='{{ $from_date }}';
     to_date='{{ $to_date }}';
@@ -160,7 +159,7 @@
             type: 'POST',
             data: {'wallet':wallet,'id':id,'fromDate':from_date,'toDate':to_date},
             success: function (data) {                    
-                data=$.parseJSON(data);
+                data=$.parseJSON(data);                
                 online_time+=parseFloat(data['online_time']);
                 offline_time+=parseFloat(data['offline_time']);
                 total_shares+=parseFloat(data['total_shares']);
@@ -175,12 +174,11 @@
                 for(i=0;i<temp.length;i++){
                     hashrate=parseFloat(temp[i].hashrate);
                     hashrates.push(hashrate);
-                    times.push(parseInt(new Date(temp[i].date).getTime()));
                 }
 
-                min_of_array = Math.min.apply(Math, times);
-                series.push({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
-                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_of_array,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
+                min_time=data['min_time']*1000;
+                series.push({'name':id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
+                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
                 
                 number_of_load_machine_complete++;
                 $(".loading div").html(number_of_load_machine_complete+" / "+machines.length+" machines");
@@ -204,7 +202,7 @@
         for(i=0;i<data_json_array.length;i++){
             tr='<tr>'+
                     '<td>'+machine_id+'</td>'+
-                    '<td data-sort="'+data_json_array[i].date_string+'">'+data_json_array[i].date_string+'</td>'+
+                    '<td>'+data_json_array[i].date_string+'</td>'+
                     '<td>'+data_json_array[i].shares+'</td>'+
                     '<td>'+data_json_array[i].hashrate+'</td>'+
                         +'</tr>';

@@ -161,7 +161,7 @@
     function showTable(data_json_array){
         for(i=0;i<data_json_array.length;i++){
             tr='<tr>'+
-                    '<td data-sort="'+data_json_array[i].date_string+'">'+data_json_array[i].date_string+'</td>'+
+                    '<td>'+data_json_array[i].date_string+'</td>'+
                     '<td>'+data_json_array[i].shares+'</td>'+
                     '<td>'+data_json_array[i].hashrate+'</td>'+
                         +'</tr>';
@@ -175,21 +175,14 @@
     function showGraph(data_json_string){
         if(data_json_string!=''){
             data_json_array=$.parseJSON(data_json_string);
+            min_time=data_json_array.min_time*1000;
             data_json_array=data_json_array.data;
-            var datas=[];
-            var times=[];
             var hashrates=[];
             for(i=0;i<data_json_array.length;i++){
                 hashrate=parseFloat(data_json_array[i].hashrate);
-                datas.push([data_json_array[i].date,hashrate]);
-                times.push(parseInt(new Date(data_json_array[i].date).getTime()));
                 hashrates.push(hashrate);
-
             }
-            var max_of_array = Math.max.apply(Math, times);
-            var min_of_array = Math.min.apply(Math, times);
-
-            data={'pointStart':min_of_array,'pointInterval':600000,'dataLength':times.length,'data':hashrates};//600000: 10 phút
+            data={'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length,'data':hashrates};//600000: 10 phút
         }
         else{
             data={'pointStart':1230764400000,'pointInterval':600000,'dataLength':0,'data':[]};//600000: 10 phút
@@ -251,6 +244,17 @@
                     text: 'Hashrates'
                 }
             },
+            
+//            xAxis: {         
+//                type:"datetime",                        
+//                minRange: 600 * 1000, // an hour
+//                dateTimeLabelFormats: { minute: '%H:%M', day: '%Y-%m-%e' },
+//                labels: {
+//                rotation: 330,
+//                y:20,
+//                staggerLines: 1,
+//                            }
+//                },
 
             title: {
                 text: 'History of reported hashrate (Average hashrate)'
