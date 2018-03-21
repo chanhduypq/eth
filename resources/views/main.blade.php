@@ -248,7 +248,8 @@ function showThead($fromDate, $toDate,&$colspan) {
 
 ?>
     <script>
-        
+        from_date='{{ $fromDate }}';
+        to_date='{{ $toDate }}';
         var number_of_load_machine_complete=0;
         var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
 
@@ -259,23 +260,14 @@ function showThead($fromDate, $toDate,&$colspan) {
             $("#average_hashrate").html(average_hashrate.toFixed(2));
         }
         function loadData(selector){
-            from=$.trim($("#fromDate").val());
-            if(from==''){
-                from='_';
-            }
-            to=$.trim($("#toDate").val());
-            if(to==''){
-                to='_';
-            }
             $.ajax({
                 url: "{{ route('getHashratechartForMachine') }}",
                 async: true,
                 type: 'POST',
-                data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html()),'fromDate':from,'toDate':to},
+                data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html()),'fromDate':from_date,'toDate':to_date},
                 success: function (data) {                    
                     $(selector).find('.loading').hide();
                     data=$.parseJSON(data);
-                    console.log(data);
                     for(key in data){
                         td1=$(selector).find('td').eq(0).html();
                         td2=$(selector).find('td').eq(1).html();
