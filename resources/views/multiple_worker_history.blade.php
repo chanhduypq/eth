@@ -1,3 +1,14 @@
+<?php 
+$online_time = $datas['online_time'];
+$offline_time = $datas['offline_time'];
+$total_shares = $datas['total_shares'];
+$average_hashrate = $datas['average_hashrate'];
+
+$online_time = round($online_time, 2);
+$offline_time = round($offline_time, 2);
+$average_hashrate = round($average_hashrate, 2);
+
+?>
 <html>
 <head>
     <!-- Latest compiled and minified CSS -->
@@ -63,33 +74,25 @@
             <tr>
                 <td>Online time (Uptime)</td>
                 <td id="online_time">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $online_time;?>  hours
                 </td>
             </tr>
             <tr>
                 <td>Offline time (Uptime)</td>
                 <td id="offline_time">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $offline_time;?>  hours
                 </td>
             </tr>
             <tr>
                 <td>Total shares</td>
                 <td id="total_shares">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $total_shares;?>
                 </td>
             </tr>
             <tr>
                 <td>Average Hashrate</td>
                 <td id="average_hashrate">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $average_hashrate;?>
                 </td>
             </tr>
             </tbody>
@@ -97,11 +100,6 @@
 
         <br>
         <br>
-    </div>
-    <br>
-    <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;width: 90%;">
-        <img src="/images/ui-anim_basic_16x16.gif"/>
-        <div>0/<?php echo count(json_decode($machines));?> machines</div>
     </div>
     <br><br>
     <div>
@@ -113,13 +111,27 @@
             <th>hashrate</th>
             </thead>
             <tbody>
+                <?php 
+                    foreach ($datas['hashrates_all'] as $temp){?>
+                    <tr>
+                        <td>
+                            <?php echo $temp['machine_id'];?>
+                        </td>
+                        <td>
+                            <?php echo $temp['date'];?>
+                        </td>
+                        <td>
+                            <?php echo $temp['shares'];?>
+                        </td>
+                        <td>
+                            <?php echo $temp['hashrate'];?>
+                        </td>
+                    </tr>
+                    <?php 
+                    }
+                ?>
             </tbody>
         </table>
-    </div>
-    <br><br><br><br>
-    <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;width: 90%;">
-        <img src="/images/ui-anim_basic_16x16.gif"/>
-        <div>0/<?php echo count(json_decode($machines));?> machines</div>
     </div>
     <br><br>
     <div id="container"></div>
@@ -130,66 +142,40 @@
     {{--</div>--}}
 </div><!-- /.container -->
 <script>
-    var number_of_load_machine_complete=0;
-    var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
-    var machines='<?php echo $machines;?>';
+    $('#nanopool-table').DataTable();
     var series=[];
-    var pie;
-    from_date='{{ $from_date }}';
-    to_date='{{ $to_date }}';
+    var machines='<?php echo json_encode($machines);?>';
+    var datas='<?php echo json_encode($datas);?>';
     machines=$.parseJSON(machines);
-    var time='{{ $time }}';
+    datas=$.parseJSON(datas);
+    min_time=datas.min_time;
+    datas=datas.hashrates_all;
     
     for(i=0;i<machines.length;i++){
-        loadData(machines[i].wallet_address,machines[i].machine_id);
+        hashrates=[];
+        for(j=0;j<datas.length;j++){
+            if(datas[j].machine_id==machines[i].machine_id){
+                hashrate=parseFloat(datas[j].hashrate);
+                hashrates.push(hashrate);
+            }
+            
+        }
+        series.push({'name':machines[i].machine_id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
     }
     
-    function showCommon(online_time,offline_time,total_shares,average_hashrate){
-        $("#online_time").html(online_time.toFixed(2)+' hours');
-        $("#offline_time").html(offline_time.toFixed(2)+' hours');
-        $("#total_shares").html(total_shares);
-        $("#average_hashrate").html(average_hashrate.toFixed(2));
+    for(i=0;i<machines.length;i++){
+        updateData(machines[i].wallet_address,machines[i].machine_id);
     }
         
-    function loadData(wallet,id){
+    function updateData(wallet,id){
         
         $.ajax({
-            url: "{{ route('getHashratechartForMachine') }}",
+            url: "{{ route('updateMachineInfo') }}",
             async: true,
             type: 'POST',
-            data: {'wallet':wallet,'id':id,'fromDate':from_date,'toDate':to_date},
-            success: function (data) {                    
-                data=$.parseJSON(data);                
-                online_time+=parseFloat(data['online_time']);
-                offline_time+=parseFloat(data['offline_time']);
-                total_shares+=parseFloat(data['total_shares']);
-                average_hashrate+=parseFloat(data['average_hashrate']);
-                if(!($('#nanopool-table').parent().hasClass('scroll'))){
-                    $('#nanopool-table').parent().addClass('scroll');
-                }
-                showTableForOneMachine(data['data'],data['machine_id']);
-                
-                temp=data['data'];
-                hashrates=[];
-                for(i=0;i<temp.length;i++){
-                    hashrate=parseFloat(temp[i].hashrate);
-                    hashrates.push(hashrate);
-                }
-
-                min_time=data['min_time']*1000;
-                series.push({'name':id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
-                pie.addSeries({'name':id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
-                
-                number_of_load_machine_complete++;
-                $(".loading div").html(number_of_load_machine_complete+" / "+machines.length+" machines");
-                if(number_of_load_machine_complete == machines.length){
-                    average_hashrate=average_hashrate/number_of_load_machine_complete;
-                    showCommon(online_time,offline_time,total_shares,average_hashrate);
-                    $(".loading").remove();
-                    $('#nanopool-table').DataTable();
-                    $('#nanopool-table_wrapper').parent().removeClass('scroll');
-                }
-                
+            data: {'wallet':wallet,'id':id},
+            success: function (data) {     
+                console.log(data);
 
             },
             error: function (request, status, error) {
@@ -198,102 +184,74 @@
         });
     }
     
-    function showTableForOneMachine(data_json_array,machine_id){
-        for(i=0;i<data_json_array.length;i++){
-            tr='<tr>'+
-                    '<td>'+machine_id+'</td>'+
-                    '<td>'+data_json_array[i].date_string+'</td>'+
-                    '<td>'+data_json_array[i].shares+'</td>'+
-                    '<td>'+data_json_array[i].hashrate+'</td>'+
-                        +'</tr>';
-            $('#nanopool-table tbody').append(tr);
-
-        }
-        
-    }
     
-    showEmptyGraph('');
     
-    function showEmptyGraph(){
-        //hide text Zoom
-        Highcharts.setOptions({
+    Highcharts.setOptions({
                 lang:{
                     rangeSelectorZoom: ''
                 }
         });
 
-        // Create the chart
-        pie = new Highcharts.stockChart('container', {
-            chart: {
-                events: {
-                    load: function () {
-                        this.setTitle(null, {
-                            text: ''
-                        });
-                    }
-                },
-                zoomType: 'x'
-            },
-
-            rangeSelector: {
-
-                buttons: [{
-                    type: 'day',
-                    count: 1,
-                    text: '1d'
-                }, {
-                    type: 'week',
-                    count: 1,
-                    text: '1w'
-                }, {
-                    type: 'month',
-                    count: 1,
-                    text: '1m'
-                }, {
-                    type: 'month',
-                    count: 6,
-                    text: '6m'
-                }, {
-                    type: 'year',
-                    count: 1,
-                    text: '1y'
-                }, {
-                    type: 'all',
-                    text: 'All'
-                }],
-                selected: 3
-            },
-
-            yAxis: {
-                title: {
-                    text: 'Hashrates'
+    // Create the chart
+    pie = new Highcharts.stockChart('container', {
+        chart: {
+            events: {
+                load: function () {
+                    this.setTitle(null, {
+                        text: ''
+                    });
                 }
             },
+            zoomType: 'x'
+        },
 
+        rangeSelector: {
+
+            buttons: [{
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'week',
+                count: 1,
+                text: '1w'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'month',
+                count: 6,
+                text: '6m'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+            selected: 3
+        },
+
+        yAxis: {
             title: {
-                text: 'History of reported hashrate (Average hashrate)'
-            },
+                text: 'Hashrates'
+            }
+        },
 
-            subtitle: {
-                text: ''
-            },
-            series:[]
-//            series: [{
-//                name: '',
-//                data: [],
-//                pointStart: 1230764400000,
-//                pointInterval: 600000,
-//                tooltip: {
-//                    valueDecimals: 0,
-//                    valueSuffix: ''
-//                }
-//            }]
+        title: {
+            text: 'History of reported hashrate (Average hashrate)'
+        },
 
-        });
-        
-        $(".highcharts-credits").html('');
-        
-    }
+        subtitle: {
+            text: ''
+        },
+        series:series
+
+    });
+
+    $(".highcharts-credits").html('');
     
 </script>
 </body>

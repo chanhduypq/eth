@@ -1,3 +1,13 @@
+<?php 
+
+$online_time = $all_info['online_time'];
+$offline_time = $all_info['offline_time'];
+$total_shares = $all_info['total_shares'];
+$average_hashrate = $all_info['average_hashrate'];
+$online_time = round($online_time, 2);
+$offline_time = round($offline_time, 2);
+$average_hashrate = round($average_hashrate, 2);
+?>
 <html>
 <head>
     <!-- Latest compiled and minified CSS -->
@@ -54,33 +64,25 @@
             <tr>
                 <td>Online time (Uptime)</td>
                 <td id="online_time">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $online_time;?>  hours
                 </td>
             </tr>
             <tr>
                 <td>Offline time (Uptime)</td>
                 <td id="offline_time">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $offline_time;?>  hours
                 </td>
             </tr>
             <tr>
                 <td>Total shares</td>
                 <td id="total_shares">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $total_shares;?>
                 </td>
             </tr>
             <tr>
                 <td>Average Hashrate</td>
                 <td id="average_hashrate">
-                    <div class="loading" style="margin: 0 auto;text-align: center;">
-                        <img src="/images/ui-anim_basic_16x16.gif"/>
-                    </div>
+                    <?php echo $average_hashrate;?>
                 </td>
             </tr>
             </tbody>
@@ -98,20 +100,26 @@
             <th>hashrate</th>
             </thead>
             <tbody>
-                <tr class="loading">
-                    <td colspan="3" style="margin: 0 auto;text-align: center;">
-                        <div style="margin: 0 auto;text-align: center;">
-                            <img src="/images/ui-anim_basic_16x16.gif"/>
-                        </div>
+                <?php 
+                foreach ($all_info['hashrates_all'] as $temp){?>
+                <tr>
+                    <td>
+                        <?php echo $temp['date'];?>
+                    </td>
+                    <td>
+                        <?php echo $temp['shares'];?>
+                    </td>
+                    <td>
+                        <?php echo $temp['hashrate'];?>
                     </td>
                 </tr>
+                <?php 
+                }
+                ?>
             </tbody>
         </table>
     </div>
     
-    <div class="loading" style="margin: 0 auto;text-align: center;position: absolute;z-index: 9999;padding-top: 50px;width: 90%;">
-        <img src="/images/ui-anim_basic_16x16.gif"/>
-    </div>
     <div id="container"></div>
     
 
@@ -121,62 +129,31 @@
 </div><!-- /.container -->
 
 <script>
-
-        var time='{{ $time }}';
-        from_date='{{ $from_date }}';
-        to_date='{{ $to_date }}';
+    
+    $('#nanopool-table').DataTable();
 
     $.ajax({
-        url: "{{ route('getHashratechartForMachine') }}",
+        url: "{{ route('updateMachineInfo') }}",
         async: true,
         type: 'POST',
-        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}",'fromDate':from_date,'toDate':to_date},
-        success: function (data) {  
-            $(".loading").remove();
-            showGraph(data);
-            data=$.parseJSON(data);
-            
-            online_time=parseFloat(data['online_time']);
-            offline_time=parseFloat(data['offline_time']);
-            total_shares=parseFloat(data['total_shares']);
-            average_hashrate=parseFloat(data['average_hashrate']);
-            showCommon(online_time,offline_time,total_shares,average_hashrate);
-            
-            showTable(data['data']);
-
-
+        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}"},
+        success: function (data) {
+            console.log(data);
         },
         error: function (request, status, error) {
             console.log(request.responseText);
         }
     });
     
-    function showCommon(online_time,offline_time,total_shares,average_hashrate){
-        $("#online_time").html(online_time.toFixed(2)+' hours');
-        $("#offline_time").html(offline_time.toFixed(2)+' hours');
-        $("#total_shares").html(total_shares);
-        $("#average_hashrate").html(average_hashrate.toFixed(2));
-    }
     
-    function showTable(data_json_array){
-        for(i=0;i<data_json_array.length;i++){
-            tr='<tr>'+
-                    '<td>'+data_json_array[i].date_string+'</td>'+
-                    '<td>'+data_json_array[i].shares+'</td>'+
-                    '<td>'+data_json_array[i].hashrate+'</td>'+
-                        +'</tr>';
-            $('#nanopool-table tbody').append(tr);
-
-        }
-        $('#nanopool-table').DataTable();
-    }
-    showGraph('');
+    data_json_string='<?php echo json_encode($all_info);?>';
+    showGraph(data_json_string);
     
     function showGraph(data_json_string){
         if(data_json_string!=''){
             data_json_array=$.parseJSON(data_json_string);
             min_time=data_json_array.min_time*1000;
-            data_json_array=data_json_array.data;
+            data_json_array=data_json_array.hashrates_all;
             var hashrates=[];
             for(i=0;i<data_json_array.length;i++){
                 hashrate=parseFloat(data_json_array[i].hashrate);

@@ -59,13 +59,13 @@ $router->post('/getHashratechartForMachine', [
     'as' => 'getHashratechartForMachine', 'uses' => 'ExampleController@getHashratechartForMachine',
 ]);
 
-$router->post('/getHashrateHistoryForMultiMachine', [
-    'as' => 'getHashrateHistoryForMultiMachine', 'uses' => 'ExampleController@getHashrateHistoryForMultiMachine',
+$router->post('/updateWalletGeneralInfo', [
+    'as' => 'updateWalletGeneralInfo', 'uses' => 'ExampleController@updateWalletGeneralInfo',
+]);
+$router->post('/updateMachineInfo', [
+    'as' => 'updateMachineInfo', 'uses' => 'ExampleController@updateMachineInfo',
 ]);
 
-$router->post('/getGeneralInfoForwallet', [
-    'as' => 'getGeneralInfoForwallet', 'uses' => 'ExampleController@getGeneralInfoForwallet',
-]);
 
 
 

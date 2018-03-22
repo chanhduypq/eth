@@ -1,3 +1,21 @@
+<?php 
+$online_time = 0;
+$offline_time = 0;
+$total_shares = 0;
+$average_hashrate = 0;
+foreach($generalInfo as $worker) {
+    $online_time+=$worker['data_all']['online_time'];
+    $offline_time+=$worker['data_all']['offline_time'];
+    $total_shares+=$worker['data_all']['total_shares'];
+    $average_hashrate+=$worker['data_all']['average_hashrate'];
+}
+$online_time = round($online_time, 2);
+$offline_time = round($offline_time, 2);
+if(count($generalInfo)>0){
+    $average_hashrate= round($average_hashrate/count($generalInfo),2);
+}
+
+?>
 <html>
 <head>
     <!-- Latest compiled and minified CSS -->
@@ -23,10 +41,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+    
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis-timeline-graph2d.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <!--<script src="https://code.highcharts.com/highcharts.js"></script>-->
     
 
     <link rel="stylesheet"
@@ -59,13 +78,45 @@
                      aria-labelledby="{{ $key }}-tab">
                     <table class="table table-bordered">
                         <tbody>
-                        <tr class="loading">
-                            <td colspan="2" style="margin: 0 auto;text-align: center;">
-                                <div style="margin: 0 auto;text-align: center;">
-                                    <img src="/images/ui-anim_basic_16x16.gif"/>
-                                </div>
+                        <tr>
+                            <td>Account</td>
+                            <td>{{ $wallet->general_info['account'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Balance</td>
+                            <td>{{ $wallet->general_info['balance'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Hashrate</td>
+                            <td>{{ $wallet->general_info['hashrate'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Hashrate (1 Hour)</td>
+                            <td>{{ $wallet->general_info['avgHashrate']['h1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Hashrate (3 Hour)</td>
+                            <td>{{ $wallet->general_info['avgHashrate']['h3'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Hashrate (6 Hour)</td>
+                            <td>{{ $wallet->general_info['avgHashrate']['h6'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Hashrate (12 Hour)</td>
+                            <td>{{ $wallet->general_info['avgHashrate']['h12'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Hashrate (24 Hour)</td>
+                            <td>{{ $wallet->general_info['avgHashrate']['h24'] }}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><a class="btn-success btn-lg btn" target="_blank"
+                                   href="{{ route('payments', ['wallet' => $wallet->general_info['account']]) }}">Payments</a>
                             </td>
                         </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -110,33 +161,25 @@
         <tr>
             <td>Online time (Uptime)</td>
             <td id="online_time">
-                <div class="loading" style="margin: 0 auto;text-align: center;">
-                    <img src="/images/ui-anim_basic_16x16.gif"/>
-                </div>
+                <?php echo $online_time;?>  hours
             </td>
         </tr>
         <tr>
             <td>Offline time (Uptime)</td>
             <td id="offline_time">
-                <div class="loading" style="margin: 0 auto;text-align: center;">
-                    <img src="/images/ui-anim_basic_16x16.gif"/>
-                </div>
+                <?php echo $offline_time;?>  hours
             </td>
         </tr>
         <tr>
             <td>Total shares</td>
             <td id="total_shares">
-                <div class="loading" style="margin: 0 auto;text-align: center;">
-                    <img src="/images/ui-anim_basic_16x16.gif"/>
-                </div>
+                <?php echo $total_shares;?>
             </td>
         </tr>
         <tr>
             <td>Average Hashrate</td>
             <td id="average_hashrate">
-                <div class="loading" style="margin: 0 auto;text-align: center;">
-                    <img src="/images/ui-anim_basic_16x16.gif"/>
-                </div>
+                <?php echo $average_hashrate;?>
             </td>
         </tr>
     </table>
@@ -155,11 +198,9 @@
                     <td>{{ $worker['hashrate'] }}</td>
                     <td data-order="{{ $worker['lastshare'] }}">{{ date('Y-m-d H:i:s', $worker['lastshare']) }}</td>
                     <td>{{ $worker['rating']??'&nbsp;' }}</td>
-                    <td colspan="<?php echo $colspan-7;?>">
-                        <div class="loading">
-                            <img src="/images/ui-anim_basic_16x16.gif"/>
-                        </div>
-                    </td>
+                    <?php foreach($worker['data_all']['hashrates'] as $hashrate){?>
+                         <td>{{ $hashrate }}</td>
+                    <?php }?>
                     <td>{{ $worker['wallet_name'] }}</td>
                     <td>
                         <a href="{{ route('workerHistory', ['id' => $worker['id'], 'time' => $selected, 'wallet' => $worker['address']]) }}"
@@ -168,11 +209,13 @@
             @endforeach
             <?php 
             if(count($generalInfo)){ ?>
+            <thead>
                 <tr>
                     <td colspan="<?php echo $colspan;?>" style="text-align: right;">
                         <a href="{{ route('multipleWorkerHistory', ['group' => $group, 'time' => $selected]) }}"
                            target="_blank">View history of all machine</a></td>
                 </tr>
+            </thead>
             <?php 
             }
             ?>
@@ -248,80 +291,15 @@ function showThead($fromDate, $toDate,&$colspan) {
 
 ?>
     <script>
-        from_date='{{ $fromDate }}';
-        to_date='{{ $toDate }}';
-        var number_of_load_machine_complete=0;
-        var online_time=0,offline_time=0,total_shares=0,average_hashrate=0;
-
-        function showCommon(online_time,offline_time,total_shares,average_hashrate){
-            $("#online_time").html(online_time.toFixed(2)+' hours');
-            $("#offline_time").html(offline_time.toFixed(2)+' hours');
-            $("#total_shares").html(total_shares);
-            $("#average_hashrate").html(average_hashrate.toFixed(2));
-        }
-        function loadData(selector){
+       
+        function updateData(selector){
             $.ajax({
-                url: "{{ route('getHashratechartForMachine') }}",
+                url: "{{ route('updateMachineInfo') }}",
                 async: true,
                 type: 'POST',
-                data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html()),'fromDate':from_date,'toDate':to_date},
+                data: {'wallet':$(selector).attr('class'),'id':$.trim($(selector).find('td').eq(0).html())},
                 success: function (data) {                    
-                    $(selector).find('.loading').hide();
-                    data=$.parseJSON(data);
-                    for(key in data){
-                        td1=$(selector).find('td').eq(0).html();
-                        td2=$(selector).find('td').eq(1).html();
-                        td3=$(selector).find('td').eq(2).html();
-                        td4=$(selector).find('td').eq(3).html();
-                        td5=$(selector).find('td').eq(4).html();
-                        td7=$(selector).find('td').eq(6).html();
-                        td8=$(selector).find('td').eq(7).html();
-                        if(key=='h1'){
-                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
-                            html+="<td>"+data['h1']+"</td>"+"<td>"+data['h3']+"</td>"+"<td>"+data['h6']+"</td>"+"<td>"+data['h12']+"</td>"+"<td>"+data['h24']+"</td>";
-                            html+="<td>"+td7+"</td>";
-                            html+="<td>"+td8+"</td>";
-                            $(selector).html(html);
-                            break;
-                        }
-                        else if(key=='d1'){
-                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
-                            html+="<td>"+data['d1']+"</td>"+"<td>"+data['d2']+"</td>"+"<td>"+data['d3']+"</td>"+"<td>"+data['d4']+"</td>"+"<td>"+data['d5']+"</td>"+"<td>"+data['d6']+"</td>"+"<td>"+data['d7']+"</td>";
-                            html+="<td>"+td7+"</td>";
-                            html+="<td>"+td8+"</td>";
-                            $(selector).html(html);
-                            break;
-                        }
-                        else if(key=='w1'){
-                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
-                            html+="<td>"+data['w1']+"</td>"+"<td>"+data['w2']+"</td>"+"<td>"+data['w3']+"</td>"+"<td>"+data['w4']+"</td>";
-                            html+="<td>"+td7+"</td>";
-                            html+="<td>"+td8+"</td>";
-                            $(selector).html(html);
-                            break;
-                        }
-                        else if(key=='all'){
-                            html="<td>"+td1+"</td>"+"<td>"+td2+"</td>"+"<td>"+td3+"</td>"+"<td>"+td4+"</td>"+"<td>"+td5+"</td>";
-                            html+="<td>"+data['all']+"</td>";
-                            html+="<td>"+td7+"</td>";
-                            html+="<td>"+td8+"</td>";
-                            $(selector).html(html);
-                            break;
-                        }
-                        
-                        
-                        
-                    }
-                    online_time+=parseFloat(data['online_time']);
-                    offline_time+=parseFloat(data['offline_time']);
-                    total_shares+=parseFloat(data['total_shares']);
-                    average_hashrate+=parseFloat(data['average_hashrate']);
-                    number_of_load_machine_complete++;
-                    if(number_of_load_machine_complete == $("#nanopool-table tbody tr").length-1){
-                        average_hashrate=average_hashrate/number_of_load_machine_complete;
-                        showCommon(online_time,offline_time,total_shares,average_hashrate);
-                    }
-                    
+                    console.log(data);
                 },
                 error: function (request, status, error) {
                     console.log(request.responseText);
@@ -329,14 +307,14 @@ function showThead($fromDate, $toDate,&$colspan) {
             });
         }
         
-        function loadWallet(selector){
+        function updateWalletGeneralInfo(selector){
             $.ajax({
-                url: "{{ route('getGeneralInfoForwallet') }}",
+                url: "{{ route('updateWalletGeneralInfo') }}",
                 async: true,
                 type: 'POST',
                 data: {'wallet':$(selector).attr('data')},
                 success: function (data) {
-                    $(selector).find('tbody').eq(0).html(data);
+                    console.log(data);
                 },
                 error: function (request, status, error) {
                     console.log(request.responseText);
@@ -347,13 +325,13 @@ function showThead($fromDate, $toDate,&$colspan) {
     $(function () {
         trs=$("#nanopool-table tbody tr");
         for(i=0;i<trs.length-1;i++){
-            loadData($(trs[i]));
+            updateData($(trs[i]));
         }
         
         
         divs=$(".tab-pane.fade");
         for(i=0;i<divs.length;i++){
-            loadWallet($(divs[i]));
+            updateWalletGeneralInfo($(divs[i]));
         }
         
 
