@@ -132,18 +132,18 @@ $average_hashrate = round($average_hashrate, 2);
     
     $('#nanopool-table').DataTable();
 
-    $.ajax({
-        url: "{{ route('updateMachineInfo') }}",
-        async: true,
-        type: 'POST',
-        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}"},
-        success: function (data) {
-            console.log(data);
-        },
-        error: function (request, status, error) {
-            console.log(request.responseText);
-        }
-    });
+//    $.ajax({
+//        url: "{{ route('updateMachineInfo') }}",
+//        async: true,
+//        type: 'POST',
+//        data: {'wallet':"{{ $address }}",'id':"{{ $workerId }}"},
+//        success: function (data) {
+//            console.log(data);
+//        },
+//        error: function (request, status, error) {
+//            console.log(request.responseText);
+//        }
+//    });
     
     
     data_json_string='<?php echo json_encode($all_info);?>';

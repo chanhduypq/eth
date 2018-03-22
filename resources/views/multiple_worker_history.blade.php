@@ -1,5 +1,6 @@
 <?php 
-$online_time = $datas['online_time'];
+//$online_time = $datas['online_time'];
+$online_time = round(count($datas['hashrates_all']) * 10 / 60, 2);
 $offline_time = $datas['offline_time'];
 $total_shares = $datas['total_shares'];
 $average_hashrate = $datas['average_hashrate'];
@@ -41,9 +42,9 @@ $average_hashrate = round($average_hashrate, 2);
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     
-    <script src="/js/jquery.multi-select.js" type="text/javascript"></script>
+<!--    <script src="/js/jquery.multi-select.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="/js/example-styles.css">
-    <link rel="stylesheet" type="text/css" href="/js/demo-styles.css">
+    <link rel="stylesheet" type="text/css" href="/js/demo-styles.css">-->
     
     <style>
         .scroll{
@@ -143,22 +144,27 @@ $average_hashrate = round($average_hashrate, 2);
     </div>
     <br><br>
     <div class="col-sm-6">
-        <label><input type="radio" value="all" name="select"/>All</label>
-        <?php if(count($groups)>0){?>
+        <?php if($group=='all'){?>
+        <label><input type="radio" value="all" name="select" checked="checked"/>All</label>
+        <?php } ?>
+        <?php if(count($groups)>0&&$group=='all'){?>
         <label><input type="radio" value="group" name="select"/>Group</label>
         <?php 
             }
             ?>
+        <?php if($group=='all'){?>
         <label><input type="radio" value="no_group" name="select"/>No group</label>
+        <?php } ?>
+        <?php if($group=='all'){?>
         <label><input type="radio" value="machine" name="select"/>Machine</label>
+        <?php } ?>
     </div>
     <div class="col-sm-6">
-        <?php if(count($groups)>0){?>
-        <select id='group' style="display: none;">
+        <?php if(count($groups)>0&&$group=='all'){?>
+        <select id='group' style="display: <?php if(is_numeric($group)) echo 'block'; else echo 'none';?>;">
             <?php 
-            foreach ($groups as $group){?>
-                
-                <option value="<?php echo $group->id;?>"><?php echo $group->name;?></option>
+            foreach ($groups as $gr){?>                
+            <option<?php if($group==$gr->id) echo ' selected="selected"';?> value="<?php echo $gr->id;?>"><?php echo $gr->name;?></option>
             <?php 
             }
             ?>
@@ -166,8 +172,7 @@ $average_hashrate = round($average_hashrate, 2);
         <?php 
             }
             ?>
-        <select  multiple="multiple" id='machine'>
-            <option value=""></option>
+        <select id='machine' style="display: none;">
             <?php 
             foreach ($machines as $machine){?>
                 <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
@@ -360,7 +365,7 @@ $average_hashrate = round($average_hashrate, 2);
     machines_nogroup=$.parseJSON(machines_nogroup);
     jQuery(function ($){
         
-        $("#machine").multiSelect();
+//        $("#machine").multiSelect();
         
         $("#machine").change(function (){
             newSeries=[];

@@ -55,9 +55,6 @@ $router->post('/admin/group/addrelation', [
     'as' => 'saveGroupRelation', 'uses' => 'ExampleController@saveGroupRelation',
 ]);
 
-$router->post('/getHashratechartForMachine', [
-    'as' => 'getHashratechartForMachine', 'uses' => 'ExampleController@getHashratechartForMachine',
-]);
 
 $router->post('/updateWalletGeneralInfo', [
     'as' => 'updateWalletGeneralInfo', 'uses' => 'ExampleController@updateWalletGeneralInfo',
