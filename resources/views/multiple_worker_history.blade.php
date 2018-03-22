@@ -37,11 +37,14 @@ $average_hashrate = round($average_hashrate, 2);
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis-timeline-graph2d.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<!--    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/series-label.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>-->
+
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    
+    <script src="/js/jquery.multi-select.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/js/example-styles.css">
+    <link rel="stylesheet" type="text/css" href="/js/demo-styles.css">
+    
     <style>
         .scroll{
             max-height: 300px;
@@ -50,6 +53,11 @@ $average_hashrate = round($average_hashrate, 2);
         .no_scroll{
             overflow: hidden !important;
             max-height: max-content !important;
+        }
+        
+        label{
+            cursor: pointer;
+            margin-right: 20px;
         }
     </style>
 </head>
@@ -134,6 +142,40 @@ $average_hashrate = round($average_hashrate, 2);
         </table>
     </div>
     <br><br>
+    <div class="col-sm-6">
+        <label><input type="radio" value="all" name="select"/>All</label>
+        <?php if(count($groups)>0){?>
+        <label><input type="radio" value="group" name="select"/>Group</label>
+        <?php 
+            }
+            ?>
+        <label><input type="radio" value="no_group" name="select"/>No group</label>
+        <label><input type="radio" value="machine" name="select"/>Machine</label>
+    </div>
+    <div class="col-sm-6">
+        <?php if(count($groups)>0){?>
+        <select id='group' style="display: none;">
+            <?php 
+            foreach ($groups as $group){?>
+                
+                <option value="<?php echo $group->id;?>"><?php echo $group->name;?></option>
+            <?php 
+            }
+            ?>
+        </select>
+        <?php 
+            }
+            ?>
+        <select  multiple="multiple" id='machine'>
+            <option value=""></option>
+            <?php 
+            foreach ($machines as $machine){?>
+                <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
+            <?php 
+            }
+            ?>
+        </select>
+    </div>
     <div id="container"></div>
     
 
@@ -150,7 +192,6 @@ $average_hashrate = round($average_hashrate, 2);
     datas=$.parseJSON(datas);
     min_time=datas.min_time;
     datas=datas.hashrates_all;
-    
     for(i=0;i<machines.length;i++){
         hashrates=[];
         for(j=0;j<datas.length;j++){
@@ -160,11 +201,11 @@ $average_hashrate = round($average_hashrate, 2);
             }
             
         }
-        series.push({'name':machines[i].machine_id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
+        series.push({'group_id': machines[i].group_id,'name':machines[i].machine_id,'data':hashrates,'pointStart':min_time,'pointInterval':600000,'dataLength':hashrates.length, 'tooltip': {'valueDecimals': 0,'valueSuffix': ''}});
     }
     
     for(i=0;i<machines.length;i++){
-        updateData(machines[i].wallet_address,machines[i].machine_id);
+//        updateData(machines[i].wallet_address,machines[i].machine_id);
     }
         
     function updateData(wallet,id){
@@ -252,6 +293,138 @@ $average_hashrate = round($average_hashrate, 2);
     });
 
     $(".highcharts-credits").html('');
+    
+    function resetSeries(newSeries){
+        pie = new Highcharts.stockChart('container', {
+            chart: {
+                events: {
+                    load: function () {
+                        this.setTitle(null, {
+                            text: ''
+                        });
+                    }
+                },
+                zoomType: 'x'
+            },
+
+            rangeSelector: {
+
+                buttons: [{
+                    type: 'day',
+                    count: 1,
+                    text: '1d'
+                }, {
+                    type: 'week',
+                    count: 1,
+                    text: '1w'
+                }, {
+                    type: 'month',
+                    count: 1,
+                    text: '1m'
+                }, {
+                    type: 'month',
+                    count: 6,
+                    text: '6m'
+                }, {
+                    type: 'year',
+                    count: 1,
+                    text: '1y'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                selected: 3
+            },
+
+            yAxis: {
+                title: {
+                    text: 'Hashrates'
+                }
+            },
+
+            title: {
+                text: 'History of reported hashrate (Average hashrate)'
+            },
+
+            subtitle: {
+                text: ''
+            },
+            series:newSeries
+
+        });
+
+        $(".highcharts-credits").html('');
+    }
+    
+    machines_nogroup='<?php echo json_encode($machines_nogroup);?>';
+    machines_nogroup=$.parseJSON(machines_nogroup);
+    jQuery(function ($){
+        
+        $("#machine").multiSelect();
+        
+        $("#machine").change(function (){
+            newSeries=[];
+           machine_id=$(this).val();
+           for(i=0,n=series.length;i<n;i++){
+               if(machine_id==series[i]['name']){
+                   newSeries.push(series[i]);
+                   break;
+               }
+           }
+           resetSeries(newSeries);
+        });
+        $("#group").change(function (){
+            newSeries=[];
+           group_id=$("#group").val();
+           for(i=0,n=series.length;i<n;i++){
+               if(group_id==series[i]['group_id']){
+                   newSeries.push(series[i]);
+               }
+           }
+           resetSeries(newSeries);
+        });
+       $("input[type='radio']").change(function (){
+           newSeries=[];
+           if($(this).val()=='machine'){               
+               $("#machine").show();
+               $("#group").hide();
+                machine_id=$("#machine").val();
+                for(i=0,n=series.length;i<n;i++){
+                   if(machine_id==series[i]['name']){
+                       newSeries.push(series[i]);
+                       break;
+                   }
+               }
+               resetSeries(newSeries);
+           }
+           else if($(this).val()=='group'){
+               $("#group").show();
+               $("#machine").hide();
+               group_id=$("#group").val();
+               for(i=0,n=series.length;i<n;i++){
+                   if(group_id==series[i]['group_id']){
+                       newSeries.push(series[i]);
+                   }
+               }
+               resetSeries(newSeries);
+           }
+           else if($(this).val()=='all'){
+               $("#group").hide();
+               $("#machine").hide();
+               resetSeries(series);
+           }
+           else{
+               $("#group").hide();
+               $("#machine").hide();
+               for(i=0,n=series.length;i<n;i++){
+                   if(machines_nogroup.indexOf(series[i]['name'])!=-1){
+                       newSeries.push(series[i]);
+                   }
+               }
+               resetSeries(newSeries);
+           }
+       });
+    });
     
 </script>
 </body>
