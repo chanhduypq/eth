@@ -1,0 +1,4 @@
+FTP Username: ethtools@tools.justnile.com
+FTP server: ftp.tools.justnile.com
+FTP & explicit FTPS port:  21
+oI4+;W]4eN[[

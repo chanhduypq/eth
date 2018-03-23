@@ -104,7 +104,7 @@ $average_hashrate = round($average_hashrate, 2);
                 foreach ($all_info['hashrates_all'] as $temp){?>
                 <tr>
                     <td>
-                        <?php echo $temp['date'];?>
+                        <?php echo $temp['date_d_m_y'];?>
                     </td>
                     <td>
                         <?php echo $temp['shares'];?>

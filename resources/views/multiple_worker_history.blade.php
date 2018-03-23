@@ -8,6 +8,7 @@ $average_hashrate = $datas['average_hashrate'];
 $online_time = round($online_time, 2);
 $offline_time = round($offline_time, 2);
 $average_hashrate = round($average_hashrate, 2);
+$showGroup=false;
 
 ?>
 <html>
@@ -62,7 +63,13 @@ $average_hashrate = round($average_hashrate, 2);
         
         label{
             cursor: pointer;
-            margin-right: 20px;
+            margin-right: 30px;
+        }
+        label input{
+            width: 30px;
+        }
+        label:hover{
+            background-color: #cc66ff;
         }
     </style>
 </head>
@@ -116,7 +123,7 @@ $average_hashrate = round($average_hashrate, 2);
     </div>
     <br><br>
     <div>
-        <table class="table table-bordered" id="nanopool-table">
+        <table class="table table-bordered" id="nanopool-table" style="display: none;">
             <thead>
             <th>worker ID</th>
             <th>date</th>
@@ -131,7 +138,7 @@ $average_hashrate = round($average_hashrate, 2);
                             <?php echo $temp['machine_id'];?>
                         </td>
                         <td>
-                            <?php echo $temp['date'];?>
+                            <?php echo $temp['date_d_m_y'];?>
                         </td>
                         <td>
                             <?php echo $temp['shares'];?>
@@ -163,14 +170,33 @@ $average_hashrate = round($average_hashrate, 2);
             </div>
             <?php } ?>
             <?php if(count($groups)>0&&$group=='all'){?>
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <label><input type="radio" value="group" name="select"/>Group</label>
                 <?php if(count($groups)>0&&!isset($groupMain)){?>
-                <select id='group' style="display: <?php if(is_numeric($group)) echo 'block'; else echo 'none';?>;">
+                <select id='group' multiple="multiple" style="display: <?php if(is_numeric($group)) echo 'block'; else echo 'none';?>;">
                     <?php 
-                    foreach ($groups as $gr){?>                
-                    <option<?php if($group==$gr->id) echo ' selected="selected"';?> value="<?php echo $gr->id;?>"><?php echo $gr->name;?></option>
+                    foreach ($groups as $gr){
+                        $has=false;
+                        foreach ($machines as $machine){
+                            if($machine['group_id']==$gr->id){
+                                $has=true;
+                                break;;
+                            }
+                        }
+                        if($has){
+                        ?>    
+                            <optgroup label="<?php echo $gr->name;?>">
+                                <?php foreach ($machines as $machine){
+                                    if($machine['group_id']==$gr->id){?>
+                                        <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
+                                <?php 
+                                    $showGroup=true;
+                                    }
+                                } ?>
+                            </optgroup>
+                            <!--<option<?php if($group==$gr->id) echo ' selected="selected"';?> value="<?php echo $gr->id;?>"><?php echo $gr->name;?></option>-->
                     <?php 
+                        }
                     }
                     ?>
                 </select>
@@ -182,7 +208,9 @@ $average_hashrate = round($average_hashrate, 2);
                 }
                 ?>
             <?php if($group=='all'){?>
-            <label><input type="radio" value="no_group" name="select"/>No group</label>
+            <div class="col-sm-4">
+                <label><input type="radio" value="no_group" name="select"/>No group</label>
+            </div>
             <?php } ?>
         <?php } 
         else{?>
@@ -208,14 +236,19 @@ $average_hashrate = round($average_hashrate, 2);
     {{--</div>--}}
 </div><!-- /.container -->
 <script>
-    $('#nanopool-table').DataTable();
+    $(window).load(function() {
+          $('#nanopool-table').show();
+          $('#nanopool-table').DataTable();
+    });
+    
     var series=[];
     var machines='<?php echo json_encode($machines);?>';
     var datas='<?php echo json_encode($datas);?>';
     machines=$.parseJSON(machines);
     datas=$.parseJSON(datas);
-    min_time=datas.min_time;
+    min_time=datas.min_time*1000;
     datas=datas.hashrates_all;
+    var el1=null;
     for(i=0;i<machines.length;i++){
         hashrates=[];
         for(j=0;j<datas.length;j++){
@@ -387,43 +420,33 @@ $average_hashrate = round($average_hashrate, 2);
     machines_nogroup='<?php echo json_encode($machines_nogroup);?>';
     machines_nogroup=$.parseJSON(machines_nogroup);
     jQuery(function ($){
+        <?php if($showGroup==FALSE){?> 
+                $("#group").parent().remove();
+        <?php }?>
+            <?php if($showNoGroup==FALSE){?> 
+                $("input[value='no_group']").parent().parent().remove();
+        <?php }?>
         
-//        $("#machine").multiSelect();
-        
-        $("#machine").change(function (){
-            newSeries=[];
-           machine_id=$(this).val();
-           for(i=0,n=series.length;i<n;i++){
-               if(machine_id==series[i]['name']){
-                   newSeries.push(series[i]);
-                   break;
-               }
-           }
-           resetSeries(newSeries);
-        });
-        $("#group").change(function (){
-            newSeries=[];
-           group_id=$("#group").val();
-           for(i=0,n=series.length;i<n;i++){
-               if(group_id==series[i]['group_id']){
-                   newSeries.push(series[i]);
-               }
-           }
-           resetSeries(newSeries);
-        });
        $("input[type='radio']").change(function (){
            newSeries=[];
            if($(this).val()=='group'){
-               $("#group").show();
+               $("#group").hide();
+               
                $("#machine").hide();
                $("#machine_ms").hide();
-               group_id=$("#group").val();
-               for(i=0,n=series.length;i<n;i++){
-                   if(group_id==series[i]['group_id']){
-                       newSeries.push(series[i]);
-                   }
+               if(el1==null){
+                   showGroup();
+                   $("#group_ms").show();
                }
-               resetSeries(newSeries);
+               else{
+                   $("#group_ms").show();
+                   el1.multiselect('refresh');
+               }
+
+               if($("#group_ms").find('span').eq(1).html()=='Select options'){
+                   $("#group_ms").find('span').eq(1).html('Select machines');
+                    resetSeries([]);
+                }
            }
            else if($(this).val()=='all'){
                $("#group").hide();
@@ -490,11 +513,74 @@ $average_hashrate = round($average_hashrate, 2);
 			var values = $.map(ui.inputs, function(checkbox){
 				return checkbox.value;
 			}).join(", ");
+
                         
-			
 //			alert("<strong>Checkboxes " + (ui.checked ? "checked" : "unchecked") + ":</strong> " + values);
 		}
 	});
+        
+        function showGroup(){
+            el1 = $("#group").multiselect({
+                    selectedText: function(numChecked, numTotal, checkedItems){
+                        newSeries=[];
+                        for(i=0;i<checkedItems.length;i++){
+                            node=checkedItems[i];
+                            for(j=0,n=series.length;j<n;j++){
+                               if(node.getAttribute('value')==series[j]['name']){
+                                   newSeries.push(series[j]);
+                               }
+                            }
+                        }
+                        resetSeries(newSeries);
+                          return numChecked + ' of ' + numTotal + ' checked';
+                       },
+                    click: function(event, ui){
+    //			alert(ui.value + ' ' + (ui.checked ? 'checked' : 'unchecked') );
+                    },
+                    beforeopen: function(){
+    //			alert("Select about to be opened...");
+                    },
+                    open: function(){
+    //			alert("Select opened!");
+                    },
+                    beforeclose: function(){
+    //			alert("Select about to be closed...");
+                    },
+                    close: function(){
+    //			alert("Select closed!");
+                    },
+                    checkAll: function(a){
+                        newSeries=[];
+                        node=a.target;
+                        options=$(node).find('option');
+                        arr=[];
+                        for(i=0;i<options.length;i++){
+                            arr.push($(options[i]).val());
+                        }
+                        for(j=0,n=series.length;j<n;j++){
+                           if(arr.indexOf(series[j]['name'])!=-1){
+                               newSeries.push(series[j]);
+                           }
+                        }
+
+                        resetSeries(newSeries);
+                    },
+                    uncheckAll: function(){
+                        newSeries=[];
+                        resetSeries(newSeries);
+                        $("#group_ms").find('span').eq(1).html('Select machines');
+                    },
+                    optgrouptoggle: function(event, ui){
+                            var values = $.map(ui.inputs, function(checkbox){
+                                    return checkbox.value;
+                            });
+
+
+    //			alert("<strong>Checkboxes " + (ui.checked ? "checked" : "unchecked") + ":</strong> " + values);
+                    }
+            });
+        }
+        
         
     });
     
