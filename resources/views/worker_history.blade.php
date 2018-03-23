@@ -201,15 +201,17 @@ $average_hashrate = round($average_hashrate, 2);
                     type: 'month',
                     count: 1,
                     text: '1m'
-                }, {
-                    type: 'month',
-                    count: 6,
-                    text: '6m'
-                }, {
-                    type: 'year',
-                    count: 1,
-                    text: '1y'
-                }, {
+                }, 
+//                {
+//                    type: 'month',
+//                    count: 6,
+//                    text: '6m'
+//                }, {
+//                    type: 'year',
+//                    count: 1,
+//                    text: '1y'
+//                }, 
+                {
                     type: 'all',
                     text: 'All'
                 }],

@@ -1,5 +1,5 @@
 <?php 
-//$online_time = $datas['online_time'];
+/* $online_time = $datas['online_time']; */
 $online_time = round(count($datas['hashrates_all']) * 10 / 60, 2);
 $offline_time = $datas['offline_time'];
 $total_shares = $datas['total_shares'];
@@ -42,9 +42,13 @@ $average_hashrate = round($average_hashrate, 2);
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     
-<!--    <script src="/js/jquery.multi-select.js" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="/js/example-styles.css">
-    <link rel="stylesheet" type="text/css" href="/js/demo-styles.css">-->
+
+    <script type="text/javascript" src="/js/jquery-migrate-3.0.0.js"></script>
+    <link rel="stylesheet" type="text/css" href="/js/jquery.multiselect.css" />
+    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" />
+    <script type="text/javascript" src="/js/jquery-ui-1.10.3/ui/jquery-ui.js"></script>
+    <script type="text/javascript" src="/js/jquery.multiselect.js"></script>
+    <script type="text/javascript" src="/js/prettify.js"></script>
     
     <style>
         .scroll{
@@ -143,44 +147,59 @@ $average_hashrate = round($average_hashrate, 2);
         </table>
     </div>
     <br><br>
-    <div class="col-sm-6">
+    <div class="col-sm-12">
         <?php if($group=='all'){?>
-        <label><input type="radio" value="all" name="select" checked="checked"/>All</label>
-        <?php } ?>
-        <?php if(count($groups)>0&&$group=='all'){?>
-        <label><input type="radio" value="group" name="select"/>Group</label>
+            <?php if($group=='all'){?>
+            <div class="col-sm-4">
+                <label><input type="radio" value="all" name="select" checked="checked"/>All</label>
+                <select id='machine' multiple="multiple" style="display: none;">
+                    <?php 
+                    foreach ($machines as $machine){?>
+                        <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
+                    <?php 
+                    }
+                    ?>
+                </select>
+            </div>
+            <?php } ?>
+            <?php if(count($groups)>0&&$group=='all'){?>
+            <div class="col-sm-3">
+                <label><input type="radio" value="group" name="select"/>Group</label>
+                <?php if(count($groups)>0&&!isset($groupMain)){?>
+                <select id='group' style="display: <?php if(is_numeric($group)) echo 'block'; else echo 'none';?>;">
+                    <?php 
+                    foreach ($groups as $gr){?>                
+                    <option<?php if($group==$gr->id) echo ' selected="selected"';?> value="<?php echo $gr->id;?>"><?php echo $gr->name;?></option>
+                    <?php 
+                    }
+                    ?>
+                </select>
+            <?php 
+                }
+                ?>
+            </div>
+            <?php 
+                }
+                ?>
+            <?php if($group=='all'){?>
+            <label><input type="radio" value="no_group" name="select"/>No group</label>
+            <?php } ?>
+        <?php } 
+        else{?>
+            <select id='machine' multiple="multiple" style="display: none;">
+                <?php 
+                foreach ($machines as $machine){?>
+                    <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
+                <?php 
+                }
+                ?>
+            </select>
         <?php 
-            }
-            ?>
-        <?php if($group=='all'){?>
-        <label><input type="radio" value="no_group" name="select"/>No group</label>
-        <?php } ?>
-        <?php if($group=='all'){?>
-        <label><input type="radio" value="machine" name="select"/>Machine</label>
-        <?php } ?>
+        }
+        ?>
+        
     </div>
-    <div class="col-sm-6">
-        <?php if(count($groups)>0&&$group=='all'){?>
-        <select id='group' style="display: <?php if(is_numeric($group)) echo 'block'; else echo 'none';?>;">
-            <?php 
-            foreach ($groups as $gr){?>                
-            <option<?php if($group==$gr->id) echo ' selected="selected"';?> value="<?php echo $gr->id;?>"><?php echo $gr->name;?></option>
-            <?php 
-            }
-            ?>
-        </select>
-        <?php 
-            }
-            ?>
-        <select id='machine' style="display: none;">
-            <?php 
-            foreach ($machines as $machine){?>
-                <option selected="selected" value="<?php echo $machine['machine_id'];?>"><?php echo $machine['machine_id'];?></option>
-            <?php 
-            }
-            ?>
-        </select>
-    </div>
+    
     <div id="container"></div>
     
 
@@ -265,15 +284,17 @@ $average_hashrate = round($average_hashrate, 2);
                 type: 'month',
                 count: 1,
                 text: '1m'
-            }, {
-                type: 'month',
-                count: 6,
-                text: '6m'
-            }, {
-                type: 'year',
-                count: 1,
-                text: '1y'
-            }, {
+            }, 
+//            {
+//                type: 'month',
+//                count: 6,
+//                text: '6m'
+//            }, {
+//                type: 'year',
+//                count: 1,
+//                text: '1y'
+//            }, 
+            {
                 type: 'all',
                 text: 'All'
             }],
@@ -326,15 +347,17 @@ $average_hashrate = round($average_hashrate, 2);
                     type: 'month',
                     count: 1,
                     text: '1m'
-                }, {
-                    type: 'month',
-                    count: 6,
-                    text: '6m'
-                }, {
-                    type: 'year',
-                    count: 1,
-                    text: '1y'
-                }, {
+                }, 
+//                {
+//                    type: 'month',
+//                    count: 6,
+//                    text: '6m'
+//                }, {
+//                    type: 'year',
+//                    count: 1,
+//                    text: '1y'
+//                }, 
+                {
                     type: 'all',
                     text: 'All'
                 }],
@@ -390,21 +413,10 @@ $average_hashrate = round($average_hashrate, 2);
         });
        $("input[type='radio']").change(function (){
            newSeries=[];
-           if($(this).val()=='machine'){               
-               $("#machine").show();
-               $("#group").hide();
-                machine_id=$("#machine").val();
-                for(i=0,n=series.length;i<n;i++){
-                   if(machine_id==series[i]['name']){
-                       newSeries.push(series[i]);
-                       break;
-                   }
-               }
-               resetSeries(newSeries);
-           }
-           else if($(this).val()=='group'){
+           if($(this).val()=='group'){
                $("#group").show();
                $("#machine").hide();
+               $("#machine_ms").hide();
                group_id=$("#group").val();
                for(i=0,n=series.length;i<n;i++){
                    if(group_id==series[i]['group_id']){
@@ -416,11 +428,18 @@ $average_hashrate = round($average_hashrate, 2);
            else if($(this).val()=='all'){
                $("#group").hide();
                $("#machine").hide();
-               resetSeries(series);
+               $("#machine_ms").show();
+//               resetSeries(series);
+                el.multiselect('refresh');
+                if($("#machine_ms").find('span').eq(1).html()=='Select options'){
+                   $("#machine_ms").find('span').eq(1).html('Select machines');
+                    resetSeries([]);
+                }
            }
            else{
                $("#group").hide();
                $("#machine").hide();
+               $("#machine_ms").hide();
                for(i=0,n=series.length;i<n;i++){
                    if(machines_nogroup.indexOf(series[i]['name'])!=-1){
                        newSeries.push(series[i]);
@@ -429,6 +448,54 @@ $average_hashrate = round($average_hashrate, 2);
                resetSeries(newSeries);
            }
        });
+       
+       el = $("#machine").multiselect({
+                selectedText: function(numChecked, numTotal, checkedItems){
+                    newSeries=[];
+                    for(i=0;i<checkedItems.length;i++){
+                        node=checkedItems[i];
+                        for(j=0,n=series.length;j<n;j++){
+                           if(node.getAttribute('value')==series[j]['name']){
+                               newSeries.push(series[j]);
+                           }
+                        }
+                    }
+                    resetSeries(newSeries);
+                      return numChecked + ' of ' + numTotal + ' checked';
+                   },
+		click: function(event, ui){
+//			alert(ui.value + ' ' + (ui.checked ? 'checked' : 'unchecked') );
+		},
+		beforeopen: function(){
+//			alert("Select about to be opened...");
+		},
+		open: function(){
+//			alert("Select opened!");
+		},
+		beforeclose: function(){
+//			alert("Select about to be closed...");
+		},
+		close: function(){
+//			alert("Select closed!");
+		},
+		checkAll: function(){
+                    resetSeries(series);
+		},
+		uncheckAll: function(){
+                    newSeries=[];
+                    resetSeries(newSeries);
+                    $("#machine_ms").find('span').eq(1).html('Select machines');
+		},
+		optgrouptoggle: function(event, ui){
+			var values = $.map(ui.inputs, function(checkbox){
+				return checkbox.value;
+			}).join(", ");
+                        
+			
+//			alert("<strong>Checkboxes " + (ui.checked ? "checked" : "unchecked") + ":</strong> " + values);
+		}
+	});
+        
     });
     
 </script>
