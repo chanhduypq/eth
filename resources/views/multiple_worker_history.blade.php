@@ -7,6 +7,19 @@ $average_hashrate = $datas['average_hashrate'];
 
 $online_time = round($online_time, 2);
 $offline_time = round($offline_time, 2);
+if($online_time+$offline_time>0){
+    $online_time_percent=round($online_time/($online_time+$offline_time),2)*100;
+}
+else{
+    $online_time_percent=0;
+}
+
+if($offline_time!=0){
+    $offline_time_percent=100-$online_time_percent;
+}
+else{
+    $offline_time_percent=0;
+}
 $average_hashrate = round($average_hashrate, 2);
 $showGroup=false;
 
@@ -94,13 +107,13 @@ $showGroup=false;
             <tr>
                 <td>Online time (Uptime)</td>
                 <td id="online_time">
-                    <?php echo $online_time;?>  hours
+                    <?php echo $online_time_percent.'% ('. $online_time;?>  hours)
                 </td>
             </tr>
             <tr>
                 <td>Offline time (Uptime)</td>
                 <td id="offline_time">
-                    <?php echo $offline_time;?>  hours
+                    <?php echo $offline_time_percent.'% ('. $offline_time;?>  hours)
                 </td>
             </tr>
             <tr>
